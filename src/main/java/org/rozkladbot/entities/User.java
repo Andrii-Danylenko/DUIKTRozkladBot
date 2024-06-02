@@ -1,7 +1,7 @@
 package org.rozkladbot.entities;
 
 import org.rozkladbot.constants.UserState;
-import org.rozkladbot.utils.GroupDB;
+import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.utils.LimitedDeque;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.Objects;
 
 @Component
 public class User implements Serializable {
@@ -20,8 +21,16 @@ public class User implements Serializable {
     private ArrayDeque<Message> lastMessages = new LimitedDeque<>(2);
     private Integer lastPinnedMessageId;
 
-    public User(long chatID, String fullName, String userName) {
+    public User(long chatID) {
         this.chatID = chatID;
+    }
+    public User(long chatID, String group, String faculty, String course, UserState userState, Integer lastPinnedMessageId) {
+        this.chatID = chatID;
+        this.group = group;
+        this.faculty = faculty;
+        this.course = course;
+        this.state = userState;
+        this.lastPinnedMessageId = lastPinnedMessageId;
     }
 
     public User(long chatID, UserState userState) {
@@ -103,5 +112,18 @@ public class User implements Serializable {
                 Група: %s
                 Курс: %s
                 """.formatted(chatID, group, course);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        User user = (User) object;
+        return chatID == user.chatID && Objects.equals(group, user.group) && Objects.equals(faculty, user.faculty) && Objects.equals(course, user.course) && state == user.state && Objects.equals(lastMessages, user.lastMessages) && Objects.equals(lastPinnedMessageId, user.lastPinnedMessageId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chatID, state);
     }
 }

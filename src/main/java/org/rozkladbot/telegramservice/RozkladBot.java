@@ -1,8 +1,8 @@
 package org.rozkladbot.telegramservice;
 
-import org.rozkladbot.handlers.AdminCommandHandler;
-import org.rozkladbot.utils.GroupDB;
+import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.handlers.ResponseHandler;
+import org.rozkladbot.DBControllers.UserDB;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
@@ -14,12 +14,10 @@ import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Reply;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.util.function.BiConsumer;
 
 import static org.telegram.abilitybots.api.objects.Locality.ALL;
-import static org.telegram.abilitybots.api.objects.Locality.USER;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
 import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 
@@ -30,9 +28,11 @@ public class RozkladBot extends AbilityBot {
     public RozkladBot(Environment environment) {
         super(environment.getProperty("botApiKey"), "RozkladBot");
         GroupDB.fetchGroups();
+        UserDB.updateUsersFromFile();
         responseHandler = new ResponseHandler(silent);
-        AdminCommandHandler adminCommandHandler = new AdminCommandHandler();
-        new Thread(adminCommandHandler).start();
+        // TODO: сделать админ-панель тоже через бота.
+//        AdminCommandHandler adminCommandHandler = new AdminCommandHandler();
+//        new Thread(adminCommandHandler).start();
     }
     @Bean
     public SilentSender silentSender() {

@@ -2,17 +2,19 @@ package org.rozkladbot.dao;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.interfaces.DAO;
 import org.rozkladbot.utils.DateUtils;
-import org.rozkladbot.utils.JSONParser;
-import org.rozkladbot.utils.Requester;
+import org.rozkladbot.utils.ScheduleParser;
+import org.rozkladbot.web.Requester;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.concurrent.*;
 
 public class DAOImpl implements DAO {
-    private final JSONParser parser = new JSONParser();
+    private final ScheduleParser parser = new ScheduleParser();
     private static final String baseUrl = "https://skedy.api.yacode.dev/v1/student/schedule?";
     private static volatile DAOImpl dao;
     private DAOImpl() {
@@ -40,8 +42,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(6)));
             put("faculty", "1");
         }};
-        String serverResponse = Requester.makeRequest(baseUrl, params);
-        return parser.table(serverResponse, params);
+        return getTable(group, params);
     }
 
     @Override
@@ -54,13 +55,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(13)));
             put("faculty", "1");
         }};
-        String serverResponse;
-        try {
-            serverResponse = Requester.makeRequest(baseUrl, params);
-        } catch (IOException exception) {
-            serverResponse = Files.readString(Path.of("GroupsSchedules/" + group + "NextWeek.json"));
-        }
-        return parser.table(serverResponse, params);
+        return getTable(group, params);
     }
 
     @Override
@@ -102,15 +97,19 @@ public class DAOImpl implements DAO {
         }};
         return getTable(group, params);
     }
-
     private Table getTable(String group, HashMap<String, String> params) throws IOException {
         String serverResponse;
         try {
-            serverResponse = Requester.makeRequest(baseUrl, params);
-        } catch (IOException exception) {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable<String> task = Requester.getRequesterCallable(baseUrl, params);
+            Future<String> result = executor.submit(task);
+            serverResponse = result.get(5, TimeUnit.SECONDS);
+            executor.shutdown();
+            System.out.println("Executor executed successfully!");
+        } catch (Exception exception) {
             serverResponse = Files.readString(Path.of("GroupsSchedules/" + group + ".json"));
         }
-        return parser.table(serverResponse, params);
+        return parser.getTable(serverResponse, params);
     }
 
     public static String getBaseUrl() {

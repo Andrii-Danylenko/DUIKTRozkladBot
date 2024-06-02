@@ -1,18 +1,20 @@
 package org.rozkladbot.handlers;
 
-import org.rozkladbot.dao.DAOImpl;
+import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.DelayedCommand;
+import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.DelayedExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component("DelayedCommandsHandler")
 public class DelayedCommandsHandler implements DelayedExecutor {
-    private static final List<DelayedCommand> delayedCommands = new CopyOnWriteArrayList<>();
+    private static final Set<DelayedCommand> delayedCommands = Collections.synchronizedSet(new HashSet<>());
     private static ResponseHandler rh;
 
     public DelayedCommandsHandler(ResponseHandler responseHandler) {
@@ -21,22 +23,27 @@ public class DelayedCommandsHandler implements DelayedExecutor {
         }
     }
     @Async
-    @Scheduled(cron = "0/10 * * * * *")
+    @Scheduled(cron = "* 0/1 * * * *")
     public void executeIfPresent() {
         delayedCommands.forEach(this::execute);
     }
     @Override
     public void execute(DelayedCommand delayedCommand) {
+        User user = delayedCommand.getUser();
         switch (delayedCommand.getDelayedCommand()) {
-            case TODAY_SCHEDULE -> DelayedCommandsHandler.rh.getTodaySchedule(delayedCommand.getUser().getChatID());
-            case NEXT_DAY_SCHEDULE -> DelayedCommandsHandler.rh.getTomorrowSchedule(delayedCommand.getUser().getChatID());
-            case THIS_WEEK_SCHEDULE -> DelayedCommandsHandler.rh.getThisWeekSchedule(delayedCommand.getUser().getChatID());
-            case NEXT_WEEK_SCHEDULE -> DelayedCommandsHandler.rh.getNextWeekSchedule(delayedCommand.getUser().getChatID());
+            case TODAY_SCHEDULE -> user.setState(UserState.AWAITING_THIS_DAY_SCHEDULE);
+            case NEXT_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_WEEK_SCHEDULE);
+            case NEXT_DAY_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_DAY_SCHEDULE);
+            case THIS_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_THIS_WEEK_SCHEDULE);
         }
+        DelayedCommandsHandler.rh.getSchedule(user.getChatID());
         delayedCommands.remove(delayedCommand);
     }
     public static void addDelayedCommand(DelayedCommand delayedCommand) {
         DelayedCommandsHandler.delayedCommands.add(delayedCommand);
+    }
+    public static Set<DelayedCommand> getDelayedCommands() {
+        return delayedCommands;
     }
     public boolean checkIfPresent() {
         return delayedCommands.isEmpty();

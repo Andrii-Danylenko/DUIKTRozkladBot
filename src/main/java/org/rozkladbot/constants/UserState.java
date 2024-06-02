@@ -13,5 +13,9 @@ public enum UserState {
     REGISTERED,
     STOP,
     GROUP_CHANGE,
-    IDLE
+    NULL_GROUP,
+    IDLE;
+    public static UserState getUserStateFromString(String state) {
+        return UserState.valueOf(state);
+    }
 }
