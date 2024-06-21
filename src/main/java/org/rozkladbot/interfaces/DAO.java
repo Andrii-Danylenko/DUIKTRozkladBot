@@ -1,8 +1,10 @@
 package org.rozkladbot.interfaces;
 
 import org.rozkladbot.entities.Table;
+import org.rozkladbot.entities.User;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 public interface DAO {
     Table getWeeklyTable(String group, String course) throws IOException;

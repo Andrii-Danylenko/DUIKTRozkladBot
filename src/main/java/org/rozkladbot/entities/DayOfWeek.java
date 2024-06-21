@@ -5,7 +5,6 @@ import org.rozkladbot.utils.DateUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DayOfWeek {
@@ -70,7 +69,7 @@ public class DayOfWeek {
         boolean hasPairs = false;
         StringBuilder builder = new StringBuilder();
         String[] splittedDate = DateUtils.toString(date).split("\\.");
-        builder.append("%s  <b>%s, %s %s %s</b>".formatted(EmojiList.TIME, dayOfWeek, splittedDate[0], DateUtils.getMonthName(splittedDate[1]), DayOfWeek.getAmountOfPairs(this))).append("\n");
+        builder.append("%s  <b>%s, %s %s %s</b>".formatted(EmojiList.CALENDAR, dayOfWeek, splittedDate[0], DateUtils.getMonthName(splittedDate[1]), DayOfWeek.getAmountOfPairs(this))).append("\n");
         for (Classes clazz : pairsList) {
             if (!clazz.getPairDetails().isEmpty()) {
                 hasPairs = true;
@@ -87,7 +86,7 @@ public class DayOfWeek {
         boolean hasPairs = false;
         String[] splittedDate = DateUtils.toString(date).split("\\.");
         StringBuilder builder = new StringBuilder();
-        builder.append("%s <b>%s, %s %s %s</b>%n".formatted(EmojiList.TIME, dayOfWeek, splittedDate[0], DateUtils.getMonthName(splittedDate[1]), DayOfWeek.getAmountOfPairs(this))).append("\n");
+        builder.append("%s <b>%s, %s %s %s</b>%n".formatted(EmojiList.CALENDAR, dayOfWeek, splittedDate[0], DateUtils.getMonthName(splittedDate[1]), DayOfWeek.getAmountOfPairs(this))).append("\n");
         for (Classes clazz : pairsList) {
             if (!clazz.getPairDetails().isEmpty()) {
                 String[] splittedInfo = clazz.pairDetails.split(",");

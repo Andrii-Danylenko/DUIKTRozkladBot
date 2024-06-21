@@ -35,7 +35,6 @@ public class Requester {
         return readRequest(connection);
     }
     private static String readRequest(HttpsURLConnection connection) throws IOException {
-        System.out.println(connection.getInputStream());
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(connection.getInputStream()));
         String inputLine;
@@ -51,6 +50,7 @@ public class Requester {
     public static Callable<String> getRequesterCallable(String baseUrl, HashMap<String, String> params) {
         return () -> makeRequest(baseUrl, params);
     }
+
     private static class RequestBuilder {
         public String getParameters(HashMap<String, String> params) {
             StringBuilder builder = new StringBuilder();

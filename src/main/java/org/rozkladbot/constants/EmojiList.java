@@ -1,13 +1,16 @@
 package org.rozkladbot.constants;
 
 public final class EmojiList {
+    public static final String TRUE = "✅";
+    public static final String FALSE = "❌";
     public static final String HAPPY = "\uD83E\uDD73";
     public static final String BEER = "\uD83C\uDF7B";
     public static final String SUBJECT = "\uD83D\uDCDA";
     public static final String CLOCK = "\uD83D\uDD51";
-    public static final String TIME = "\uD83D\uDD5C";
+    public static final String CALENDAR = "\uD83D\uDCC5";
     public static final String LECTOR = "\uD83E\uDDD1\u200D\uD83C\uDFEB";
     public static final String ROOM = "\uD83D\uDEAA";
+    public static final String NERD_FACE = "\uD83E\uDD13";
     // TODO: сделать динамические линки на конференции.
     public static final String LINK_TO_ZOOM = "\uD83D\uDD17";
     private static final String PAIR_1 = "1️⃣";

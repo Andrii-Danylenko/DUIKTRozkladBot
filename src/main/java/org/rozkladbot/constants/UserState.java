@@ -10,10 +10,12 @@ public enum UserState {
     AWAITING_CUSTOM_SCHEDULE,
     AWAITING_CUSTOM_SCHEDULE_INPUT,
     SETTINGS,
+    AWAITING_REGISTRATION,
     REGISTERED,
     STOP,
     GROUP_CHANGE,
     NULL_GROUP,
+    ADMIN_SEND_MESSAGE,
     IDLE;
     public static UserState getUserStateFromString(String state) {
         return UserState.valueOf(state);

@@ -1,5 +1,7 @@
 package org.rozkladbot.utils;
 
+import org.springframework.cglib.core.Local;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -7,8 +9,8 @@ import java.util.Locale;
 
 public class DateUtils {
     private static final Locale locale = new Locale("uk");
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy").withLocale(locale);
-    private static final ZoneId zoneId = ZoneId.of("Europe/Kyiv");
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy").withLocale(locale);
+    public static final ZoneId zoneId = ZoneId.of("Europe/Kiev");
 
     public static boolean isDayOfWeek(String info) {
         return switch (info.toLowerCase()) {
@@ -31,7 +33,9 @@ public class DateUtils {
     }
 
     public static LocalDate getTodayDate() {
-        return ZonedDateTime.now(zoneId).toLocalDate();
+        LocalDate localDate = ZonedDateTime.now(zoneId).toLocalDate();
+        System.out.println("getTodayDate() " + localDate);
+        return localDate;
     }
 
     public static LocalDate parseDate(String date) {
@@ -43,7 +47,9 @@ public class DateUtils {
     }
 
     public static String getTodayDateString() {
-        return ZonedDateTime.now(zoneId).format(formatter);
+        String timeAsString = ZonedDateTime.now(zoneId).format(formatter);
+        System.out.println("getTodayDateString() " + timeAsString);
+        return timeAsString;
     }
 
     public static String toString(LocalDate date) {
@@ -92,8 +98,12 @@ public class DateUtils {
             default -> "undefined";
         };
     }
-
-    public static LocalDate longToDate(long longDate) {
-        return Instant.ofEpochSecond(longDate).atZone(zoneId).toLocalDate();
+    public static LocalDateTime timeOfNow() {
+        return ZonedDateTime.now(zoneId).toLocalDateTime();
+    }
+    public static LocalDate instantToLocalDate(Instant instant) {
+        LocalDate localDate = LocalDate.ofInstant(instant, zoneId);
+        System.out.println("instantToLocalDate() " + localDate);
+        return localDate;
     }
 }

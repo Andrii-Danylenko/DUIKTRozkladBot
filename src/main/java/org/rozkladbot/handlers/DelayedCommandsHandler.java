@@ -7,6 +7,8 @@ import org.rozkladbot.interfaces.DelayedExecutor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,7 +38,7 @@ public class DelayedCommandsHandler implements DelayedExecutor {
             case NEXT_DAY_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_DAY_SCHEDULE);
             case THIS_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_THIS_WEEK_SCHEDULE);
         }
-        DelayedCommandsHandler.rh.getSchedule(user.getChatID());
+        DelayedCommandsHandler.rh.getSchedule(user, user.getChatID());
         delayedCommands.remove(delayedCommand);
     }
     public static void addDelayedCommand(DelayedCommand delayedCommand) {

@@ -1,15 +1,16 @@
 package org.rozkladbot.entities;
 
+import org.rozkladbot.constants.UserRole;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.utils.LimitedDeque;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.Objects;
 
 @Component
 public class User implements Serializable {
@@ -18,18 +19,20 @@ public class User implements Serializable {
     private String faculty = "1";
     private String course;
     private UserState state;
-    private ArrayDeque<Message> lastMessages = new LimitedDeque<>(2);
+    private ArrayDeque<String> lastMessages = new LimitedDeque<>(2);
     private Integer lastPinnedMessageId;
+    private UserRole role;
 
     public User(long chatID) {
         this.chatID = chatID;
     }
-    public User(long chatID, String group, String faculty, String course, UserState userState, Integer lastPinnedMessageId) {
+    public User(long chatID, String group, String faculty, String course, UserState userState, UserRole userRole, Integer lastPinnedMessageId) {
         this.chatID = chatID;
         this.group = group;
         this.faculty = faculty;
         this.course = course;
         this.state = userState;
+        this.role = userRole;
         this.lastPinnedMessageId = lastPinnedMessageId;
     }
 
@@ -58,11 +61,11 @@ public class User implements Serializable {
         this.state = state;
     }
 
-    public ArrayDeque<Message> getLastMessages() {
+    public ArrayDeque<String> getLastMessages() {
         return lastMessages;
     }
 
-    public void setLastMessages(ArrayDeque<Message> lastMessages) {
+    public void setLastMessages(ArrayDeque<String> lastMessages) {
         this.lastMessages = lastMessages;
     }
 
@@ -111,19 +114,15 @@ public class User implements Serializable {
                 Id-чату: %d
                 Група: %s
                 Курс: %s
-                """.formatted(chatID, group, course);
+                Роль: %s
+                """.formatted(chatID, group, course, role);
     }
 
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null || getClass() != object.getClass()) return false;
-        User user = (User) object;
-        return chatID == user.chatID && Objects.equals(group, user.group) && Objects.equals(faculty, user.faculty) && Objects.equals(course, user.course) && state == user.state && Objects.equals(lastMessages, user.lastMessages) && Objects.equals(lastPinnedMessageId, user.lastPinnedMessageId);
+    public UserRole getRole() {
+        return role;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(chatID, state);
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 }

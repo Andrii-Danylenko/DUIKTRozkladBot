@@ -4,6 +4,8 @@ import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.dao.DAOImpl;
+import org.rozkladbot.factories.KeyBoardFactory;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.IOException;
 
@@ -19,8 +21,7 @@ public final class UserCommands {
                 /week - розклад на цей тиждень.
                 /nextWeek - розклад на наступний тиждень.
                 /custom - розклад за своїми параметрами.
-                /settings - змінити налаштування.
-                """;
+                /settings - змінити налаштування.""";
     }
     public static String getThisDaySchedule(User user) throws IOException {
         return dao.getTodayTable(GroupDB.getGroups().get(user.getGroup()).toString(), user.getCourse()).toString();
@@ -45,7 +46,8 @@ public final class UserCommands {
                """.formatted(user.getGroup(), user.getGroupNumber(), user.getCourse());
     }
     public static void finishRegistration(User user) {
-        String group = user.getLastMessages().getFirst().getText().toUpperCase();
+        String group = user.getLastMessages().getFirst().toUpperCase();
+        System.out.println(group);
         user.setGroup(group);
         user.setState(UserState.REGISTERED);
         user.setCourse(String.valueOf(group.charAt(group.lastIndexOf("-") + 1)));
