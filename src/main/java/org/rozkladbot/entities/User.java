@@ -22,11 +22,12 @@ public class User implements Serializable {
     private ArrayDeque<String> lastMessages = new LimitedDeque<>(2);
     private Integer lastPinnedMessageId;
     private UserRole role;
+    private boolean areInBroadcastGroup = true;
 
     public User(long chatID) {
         this.chatID = chatID;
     }
-    public User(long chatID, String group, String faculty, String course, UserState userState, UserRole userRole, Integer lastPinnedMessageId) {
+    public User(long chatID, String group, String faculty, String course, UserState userState, UserRole userRole, Integer lastPinnedMessageId, boolean areInBroadcastGroup) {
         this.chatID = chatID;
         this.group = group;
         this.faculty = faculty;
@@ -34,6 +35,7 @@ public class User implements Serializable {
         this.state = userState;
         this.role = userRole;
         this.lastPinnedMessageId = lastPinnedMessageId;
+        this.areInBroadcastGroup = areInBroadcastGroup;
     }
 
     public User(long chatID, UserState userState) {
@@ -124,5 +126,13 @@ public class User implements Serializable {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public boolean isAreInBroadcastGroup() {
+        return areInBroadcastGroup;
+    }
+
+    public void setAreInBroadcastGroup(boolean areInBroadcastGroup) {
+        this.areInBroadcastGroup = areInBroadcastGroup;
     }
 }

@@ -47,10 +47,6 @@ public class Requester {
         return content.toString();
     }
 
-    public static Callable<String> getRequesterCallable(String baseUrl, HashMap<String, String> params) {
-        return () -> makeRequest(baseUrl, params);
-    }
-
     private static class RequestBuilder {
         public String getParameters(HashMap<String, String> params) {
             StringBuilder builder = new StringBuilder();

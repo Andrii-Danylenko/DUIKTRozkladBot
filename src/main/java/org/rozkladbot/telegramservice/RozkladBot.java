@@ -40,7 +40,7 @@ public class RozkladBot extends AbilityBot {
                           Час у Києві: %s
                           Сьогодні: %s
                           """, LocalDateTime.now(), DateUtils.timeOfNow(), DateUtils.getDayOfWeek(DateUtils.getTodayDateString()));
-        responseHandler = new ResponseHandler(silent);
+        responseHandler = new ResponseHandler(silent, this);
     }
     @Bean
     public SilentSender silentSender() {

@@ -26,7 +26,8 @@ public class UserDB {
                        "course": "%s",
                        "state": "%s",
                        "role": "%s",
-                       "lastPinnedMessage": "%s"
+                       "lastPinnedMessage": "%s",
+                       "areInBroadcastGroup": "%s"
                    }"""
                 .formatted(
                            user.getChatID(),
@@ -35,7 +36,8 @@ public class UserDB {
                            user.getCourse(),
                            user.getState(),
                            user.getRole(),
-                           user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId());
+                           user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),
+                           user.isAreInBroadcastGroup());
 
     }
 

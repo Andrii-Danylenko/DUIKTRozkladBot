@@ -31,15 +31,19 @@ public class DelayedCommandsHandler implements DelayedExecutor {
     }
     @Override
     public void execute(DelayedCommand delayedCommand) {
-        User user = delayedCommand.getUser();
-        switch (delayedCommand.getDelayedCommand()) {
-            case TODAY_SCHEDULE -> user.setState(UserState.AWAITING_THIS_DAY_SCHEDULE);
-            case NEXT_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_WEEK_SCHEDULE);
-            case NEXT_DAY_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_DAY_SCHEDULE);
-            case THIS_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_THIS_WEEK_SCHEDULE);
+        try {
+            User user = delayedCommand.getUser();
+            switch (delayedCommand.getDelayedCommand()) {
+                case TODAY_SCHEDULE -> user.setState(UserState.AWAITING_THIS_DAY_SCHEDULE);
+                case NEXT_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_WEEK_SCHEDULE);
+                case NEXT_DAY_SCHEDULE -> user.setState(UserState.AWAITING_NEXT_DAY_SCHEDULE);
+                case THIS_WEEK_SCHEDULE -> user.setState(UserState.AWAITING_THIS_WEEK_SCHEDULE);
+            }
+            DelayedCommandsHandler.rh.getSchedule(user, user.getChatID());
+            delayedCommands.remove(delayedCommand);
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-        DelayedCommandsHandler.rh.getSchedule(user, user.getChatID());
-        delayedCommands.remove(delayedCommand);
     }
     public static void addDelayedCommand(DelayedCommand delayedCommand) {
         DelayedCommandsHandler.delayedCommands.add(delayedCommand);

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 public class AdminCommands {
     private static FileUtils fileUtils = new FileUtils();
+    private static SilentSender sender = ResponseHandler.getSilentSender();
     public static String getAllCommands() {
         return  """
                            /viewUsers - подивитися підключених юзерів
@@ -60,13 +61,11 @@ public class AdminCommands {
                     System.out.println("Починаю синхронізацію розкладів...");
                     fileUtils.dumpSchedule(true);
                     System.out.println("Закінчив синхронізацію розкладів...");
-                    break;
                 }
                 case "-u" -> {
                     System.out.println("Починаю синхронізацію користувачів...");
                     fileUtils.serializeUsers();
                     System.out.println("Закінчив синхронізацію користувачів...");
-                    break;
                 }
             }
         }

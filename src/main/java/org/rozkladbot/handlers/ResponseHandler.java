@@ -13,19 +13,22 @@ import org.rozkladbot.factories.KeyBoardFactory;
 import org.rozkladbot.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.sender.SilentSender;
-import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
-import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -36,9 +39,11 @@ public class ResponseHandler {
     private static final Logger log = LoggerFactory.getLogger(ResponseHandler.class);
     private static SilentSender sender;
     private final Lock lock = new ReentrantLock();
+    private final AbilityBot abilityBot;
 
-    public ResponseHandler(SilentSender sender) {
+    public ResponseHandler(SilentSender sender, AbilityBot abilityBot) {
         ResponseHandler.sender = sender;
+        this.abilityBot = abilityBot;
     }
 
     public synchronized void replyToStart(long chatId) {
@@ -51,17 +56,24 @@ public class ResponseHandler {
                 welcomeMessage = UserCommands.getMenu();
             }
             log.info("Розпочато діалог з користувачем з id {}", chatId);
-            SendMessage message = new SendMessage();
-            message.setChatId(chatId);
-            message.setText(welcomeMessage);
-            message.setReplyMarkup(KeyBoardFactory.getCommandsList());
-            sender.execute(message);
+            SendPhoto sendPhoto = getSendPhoto(chatId, welcomeMessage);
+            abilityBot.execute(sendPhoto);
         } catch (Exception exception) {
             log.error("""
                     Виникла помилка під час створення діалогу із користувачем з id {}.
                     Повідомлення помилки: {}
                     """, chatId, exception.getMessage());
         }
+    }
+
+    private static SendPhoto getSendPhoto(long chatId, String caption) throws IOException {
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setParseMode("html");
+        sendPhoto.setChatId(chatId);
+        sendPhoto.setCaption(caption);
+        sendPhoto.setReplyMarkup(KeyBoardFactory.getCommandsList());
+        sendPhoto.setPhoto(new InputFile(new FileInputStream(Paths.get("funnyImages/image.jpg").toFile()), "meme"));
+        return sendPhoto;
     }
 
     public boolean userIsActive(long chatId) {
@@ -72,6 +84,7 @@ public class ResponseHandler {
         lock.lock();
         User currentUser = UserDB.getAllUsers().get(chatId);
         String messageText = "";
+        System.out.println(currentUser.getState());
         if (update.hasMessage()) {
             messageText = update.getMessage().getText();
             currentUser.getLastMessages().addLast(update.getMessage().getText());
@@ -79,18 +92,15 @@ public class ResponseHandler {
         lock.unlock();
         if (update.hasCallbackQuery()) {
             String callbackQueryText = update.getCallbackQuery().getData();
-            System.out.println("=======================");
-            System.out.println(callbackQueryText);
-            System.out.println("=======================");
-            if (currentUser.getState() == NULL_GROUP) {
+            if (currentUser.getState() == AWAITING_INPUT && "ТАК".equalsIgnoreCase(callbackQueryText)) {
+                finishRegistration(currentUser, chatId);
+            } else if ("НАЗАД".equalsIgnoreCase(callbackQueryText)) {
+                    currentUser.setState(MAIN_MENU);
+            } else if (currentUser.getState() == NULL_GROUP) {
                 if ("НІ".equalsIgnoreCase(callbackQueryText)
                         || GroupDB.getGroups().containsKey(callbackQueryText)) {
                     currentUser.setState(AWAITING_INPUT);
                 }
-            } else if (currentUser.getState() == AWAITING_INPUT && "ТАК".equalsIgnoreCase(callbackQueryText)) {
-                finishRegistration(currentUser, chatId);
-            } else if ("НАЗАД".equalsIgnoreCase(callbackQueryText)) {
-                    currentUser.setState(MAIN_MENU);
             } else if ("ЗГ".equalsIgnoreCase(callbackQueryText)) {
                 currentUser.setState(NULL_GROUP);
             } else if ("DAY".equalsIgnoreCase(callbackQueryText)) {
@@ -105,221 +115,190 @@ public class ResponseHandler {
                 currentUser.setState(AWAITING_CUSTOM_SCHEDULE_INPUT);
             } else if ("НЛ".equalsIgnoreCase(callbackQueryText)) {
                 currentUser.setState(SETTINGS);
+            } else if ("DIS".equalsIgnoreCase(callbackQueryText)) {
+                currentUser.setAreInBroadcastGroup(false);
+            } else if ("ENA".equalsIgnoreCase(callbackQueryText)) {
+                currentUser.setAreInBroadcastGroup(true);
             }
         }
-        System.out.printf("Стан користувача в replyToButtons() на даний момент: %s%n", currentUser.getState());
-        if ("/stop".equalsIgnoreCase(messageText)) {
-            currentUser.setState(STOP);
-        }
-        if (currentUser.getState() == UserState.NULL_GROUP || "Змінити групу".equalsIgnoreCase(messageText) && currentUser.getState() != null) {
-            currentUser.setGroup(null);
-            currentUser.setState(SETTINGS);
-        }
-        if (currentUser.getState() == AWAITING_INPUT) {
-            if ("Так".equalsIgnoreCase(messageText)) {
-                finishRegistration(currentUser, chatId);
-            } else if ("Ні".equalsIgnoreCase(messageText)) {
-                currentUser.setState(SETTINGS);
+        else {
+            System.out.printf("Стан користувача в replyToButtons() на даний момент: %s%n", currentUser.getState());
+            if ("/stop".equalsIgnoreCase(messageText)) {
+                currentUser.setState(STOP);
             }
-        } else if ("/menu".equalsIgnoreCase(messageText) ||
-                "/menu@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(MAIN_MENU);
-        } else if ("/settings".equalsIgnoreCase(messageText) ||
-                "/settings@rozkad_bot".equalsIgnoreCase(messageText) || (currentUser.getGroup() == null)) {
-            if (GroupDB.getGroups().containsKey(messageText.toUpperCase())) {
+            if (currentUser.getState() == UserState.NULL_GROUP || "Змінити групу".equalsIgnoreCase(messageText) && currentUser.getState() != null) {
                 currentUser.setState(AWAITING_INPUT);
-            } else currentUser.setState(SETTINGS);
-        } else if ("/week".equalsIgnoreCase(messageText) ||
-                "/week@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_THIS_WEEK_SCHEDULE);
-        } else if ("/nextWeek".equalsIgnoreCase(messageText) ||
-                "/nextWeek@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_NEXT_WEEK_SCHEDULE);
-        } else if ("/day".equalsIgnoreCase(messageText) ||
-                "/day@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_THIS_DAY_SCHEDULE);
-        } else if ("/nextDay".equalsIgnoreCase(messageText) ||
-                "/nextDay@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_NEXT_DAY_SCHEDULE);
-        } else if ("/custom".equalsIgnoreCase(messageText) ||
-                "/custom@rozkad_bot".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_CUSTOM_SCHEDULE_INPUT);
-        }
-        if (currentUser.getState() != null && currentUser.getRole() == UserRole.ADMIN) {
-            if (messageText.toLowerCase().startsWith("/sendmessage ")) {
-                currentUser.setState(ADMIN_SEND_MESSAGE);
-            } else if (messageText.toLowerCase().startsWith("/synchronize ")) {
-                try {
-                    AdminCommands.synchronize(messageText.split("\\s"));
-                } catch (IOException exception) {
-                    System.err.println("Помилка в методі AdminCommands.synchronize()");
-                    exception.printStackTrace();
-                } finally {
+            }
+            if (currentUser.getState() == AWAITING_INPUT) {
+                if ("Так".equalsIgnoreCase(messageText)) {
+                    finishRegistration(currentUser, chatId);
+                } else if ("Ні".equalsIgnoreCase(messageText)) {
+                    currentUser.setState(SETTINGS);
+                }
+            } else if ("/menu".equalsIgnoreCase(messageText) ||
+                    "/menu@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(MAIN_MENU);
+            } else if ("/settings".equalsIgnoreCase(messageText) ||
+                    "/settings@rozkad_bot".equalsIgnoreCase(messageText) || (currentUser.getGroup() == null)) {
+                if (GroupDB.getGroups().containsKey(messageText.toUpperCase())) {
+                    currentUser.setState(AWAITING_INPUT);
+                } else currentUser.setState(SETTINGS);
+            } else if ("/week".equalsIgnoreCase(messageText) ||
+                    "/week@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(AWAITING_THIS_WEEK_SCHEDULE);
+            } else if ("/nextWeek".equalsIgnoreCase(messageText) ||
+                    "/nextWeek@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(AWAITING_NEXT_WEEK_SCHEDULE);
+            } else if ("/day".equalsIgnoreCase(messageText) ||
+                    "/day@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(AWAITING_THIS_DAY_SCHEDULE);
+            } else if ("/nextDay".equalsIgnoreCase(messageText) ||
+                    "/nextDay@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(AWAITING_NEXT_DAY_SCHEDULE);
+            } else if ("/custom".equalsIgnoreCase(messageText) ||
+                    "/custom@rozkad_bot".equalsIgnoreCase(messageText)) {
+                currentUser.setState(AWAITING_CUSTOM_SCHEDULE_INPUT);
+            }
+            if (currentUser.getState() != null && currentUser.getRole() == UserRole.ADMIN) {
+                if (messageText.toLowerCase().startsWith("/sendmessage ")) {
+                    currentUser.setState(ADMIN_SEND_MESSAGE);
+                } else if (messageText.toLowerCase().startsWith("/synchronize ")) {
+                    try {
+                        AdminCommands.synchronize(messageText.split("\\s"));
+                    } catch (IOException exception) {
+                        System.err.println("Помилка в методі AdminCommands.synchronize()");
+                        exception.printStackTrace();
+                    } finally {
+                        currentUser.setState(IDLE);
+                    }
+                } else if ("/viewUsers".equalsIgnoreCase(messageText)) {
+                    AdminCommands.viewUsers(sender, chatId);
+                    currentUser.setState(IDLE);
+                } else if ("/terminateSession".equalsIgnoreCase(messageText)) {
+                    currentUser.setState(IDLE);
+                    AdminCommands.terminateSession();
+                } else if ("/forceFetch".equalsIgnoreCase(messageText)) {
+                    AdminCommands.forceFetch();
                     currentUser.setState(IDLE);
                 }
-            } else if ("/viewUsers".equalsIgnoreCase(messageText)) {
-                AdminCommands.viewUsers(sender, chatId);
-                currentUser.setState(IDLE);
-            } else if ("/terminateSession".equalsIgnoreCase(messageText)) {
-                currentUser.setState(IDLE);
-                AdminCommands.terminateSession();
-            } else if ("/forceFetch".equalsIgnoreCase(messageText)) {
-                AdminCommands.forceFetch();
-                currentUser.setState(IDLE);
             }
         }
-        switch (currentUser.getState()) {
-            case MAIN_MENU -> getMenu(chatId);
-            case AWAITING_THIS_WEEK_SCHEDULE,
-                    AWAITING_NEXT_DAY_SCHEDULE,
-                    AWAITING_THIS_DAY_SCHEDULE,
-                    AWAITING_NEXT_WEEK_SCHEDULE -> getSchedule(currentUser, chatId);
-            case AWAITING_CUSTOM_SCHEDULE_INPUT -> getCustomSchedulePrepare(currentUser, chatId);
-            case AWAITING_CUSTOM_SCHEDULE -> splitAndSend(currentUser, chatId, update);
-            case SETTINGS -> getSettings(currentUser, chatId);
-            case AWAITING_INPUT -> registerUser(currentUser, chatId, update);
-            case STOP -> stopDialog(chatId);
-            case ADMIN_SEND_MESSAGE -> AdminCommands.sendMessage(update.getMessage().getText());
+        try {
+            switch (currentUser.getState()) {
+                case MAIN_MENU -> getMenu(currentUser, chatId);
+                case AWAITING_THIS_WEEK_SCHEDULE,
+                        AWAITING_NEXT_DAY_SCHEDULE,
+                        AWAITING_THIS_DAY_SCHEDULE,
+                        AWAITING_NEXT_WEEK_SCHEDULE -> getSchedule(currentUser, chatId);
+                case AWAITING_CUSTOM_SCHEDULE_INPUT -> getCustomSchedulePrepare(currentUser, chatId);
+                case AWAITING_CUSTOM_SCHEDULE -> splitAndSend(currentUser, chatId, update);
+                case SETTINGS -> getSettings(currentUser, chatId);
+                case AWAITING_INPUT, NULL_GROUP -> registerUser(currentUser, chatId, update);
+                case STOP -> stopDialog(chatId);
+                case ADMIN_SEND_MESSAGE -> AdminCommands.sendMessage(update.getMessage().getText());
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
     }
 
-    public void getMenu(long chatId) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
+    public void getMenu(User currentUser, long chatId) throws IOException, TelegramApiException {
+        if (currentUser.getGroup() == null) {
+            currentUser.setState(NULL_GROUP);
+        }
         String menu = UserCommands.getMenu();
         if (UserDB.getAllUsers().get(chatId).getRole() == UserRole.ADMIN) {
             menu += '\n' + AdminCommands.getAllCommands();
         }
-        sendMessage.setText(menu);
-        sendMessage.setReplyMarkup(KeyBoardFactory.getCommandsList());
-        sender.execute(sendMessage);
+        SendPhoto sendPhoto = getSendPhoto(chatId, menu);
+        sendPhoto.setReplyMarkup(KeyBoardFactory.getCommandsList());
+        abilityBot.execute(sendPhoto);
     }
 
-    public void getSchedule(User currentUser, long chatId) {
-        log.info("Користувач з id {} увійшов у getSchedule()", chatId);
-        System.out.printf("Користувач з id %d увійшов у getSchedule()%n", chatId);
-        if (currentUser.getGroup() == null) {
-            currentUser.setState(NULL_GROUP);
-            return;
-        }
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.enableHtml(true);
-        sendMessage.setReplyMarkup(KeyBoardFactory.deleteKeyBoard());
-        sendMessage.setParseMode("html");
-        try {
-            switch (currentUser.getState()) {
-                case AWAITING_THIS_WEEK_SCHEDULE -> {
-                    System.out.printf("""
-                            Розпочато спробу отримання розкладу на цей тиждень
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Розпочато спробу отримання розкладу на цей тиждень
-                            для користувача з id {}
-                            """, chatId);
-                    sendMessage.setText("""
-                            %s Розклад на цей тиждень:
-
-                            %s
-                            """.formatted(EmojiList.NERD_FACE, UserCommands.getThisWeekSchedule(currentUser)));
-                    System.out.printf("""
-                            Успішно завершено спробу отримання розкладу на цей тиждень
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Успішно завершено спробу отримання розкладу на цей тиждень
-                            для користувача з id {}
-                            """, chatId);
-                }
-                case AWAITING_NEXT_WEEK_SCHEDULE -> {
-                    System.out.printf("""
-                            Розпочато спробу отримання розкладу на наступний тиждень
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Розпочато спробу отримання розкладу на наступний тиждень
-                            для користувача з id {}
-                            """, chatId);
-                    sendMessage.setText("""
-                            %s Розклад на наступний тиждень:
-                                                        
-                            %s
-                            """.formatted(EmojiList.NERD_FACE, UserCommands.getNextWeekSchedule(currentUser)));
-                    System.out.printf("""
-                            Успішно завершено отримання розкладу на наступний тиждень
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Успішно завершено спробу отримання розкладу на цей тиждень
-                            для користувача з id {}
-                            """, chatId);
-                }
-                case AWAITING_THIS_DAY_SCHEDULE -> {
-                    System.out.printf("""
-                            Розпочато спробу отримання розкладу на цей день
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Розпочато спробу отримання розкладу на цей день
-                            для користувача з id {}
-                            """, chatId);
-                    sendMessage.setText("""
-                            %s Розклад на сьогодні:
-                                                        
-                            %s
-                            """.formatted(EmojiList.NERD_FACE, UserCommands.getThisDaySchedule(currentUser)));
-                    System.out.printf("""
-                            Успішно завершено спробу отримання розкладу на цей день
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Успішно завершено спробу отримання розкладу на цей день
-                            для користувача з id {}
-                            """, chatId);
-                }
-                case AWAITING_NEXT_DAY_SCHEDULE -> {
-                    System.out.printf("""
-                            Розпочато спробу отримання розкладу на наступний день
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Розпочато спробу отримання розкладу на наступний день
-                            для користувача з id {}
-                            """, chatId);
-                    sendMessage.setText("""
-                            %s Розклад на завтра:
-                                                        
-                            %s
-                            """.formatted(EmojiList.NERD_FACE, UserCommands.getTomorrowSchedule(currentUser)));
-                    System.out.printf("""
-                            Успішно завершено спробу отримання розкладу на наступний день
-                            для користувача з id %d
-                            """, chatId);
-                    log.info("""
-                            Успішно завершено спробу отримання розкладу на наступний день
-                            для користувача з id {}
-                            """, chatId);
-                }
+    public CompletableFuture<Void> getSchedule(User currentUser, long chatId) {
+        return CompletableFuture.runAsync(() -> {
+            log.info("Користувач з id {} увійшов у getSchedule()", chatId);
+            System.out.printf("Користувач з id %d увійшов у getSchedule()%n", chatId);
+            if (currentUser.getGroup() == null || currentUser.getState() == AWAITING_INPUT) {
+                currentUser.setState(UserState.NULL_GROUP);
+                return;
             }
-        } catch (IOException exception) {
-            System.out.printf("""
-                    Виникла помилка під час отримання розкладу для користувача з id %d.
-                    Повідомлення помилки: %s
-                       """, chatId, exception.getMessage());
-            log.error("""
-                    Виникла помилка під час отримання розкладу для користувача з id {}.
-                    Повідомлення помилки: {}
-                       """, chatId, exception.getMessage());
-            sendMessage.setText("""
-                    Щось пішло не так :(
-                    Спробуйте пізніше.
-                    """);
-        } finally {
-            sendMessage.setReplyMarkup(KeyBoardFactory.getBackButton());
-            sender.execute(sendMessage);
-            currentUser.setState(IDLE);
-        }
+            SendPhoto sendPhoto;
+            try {
+                sendPhoto = getSendPhoto(chatId, "");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                switch (currentUser.getState()) {
+                    case AWAITING_THIS_WEEK_SCHEDULE -> {
+                        logScheduleAttempt("цей тиждень", chatId);
+                        sendPhoto = getSendPhoto(chatId, """
+                                %s Розклад на цей тиждень:
+
+                                %s
+                                """.formatted(EmojiList.NERD_FACE, UserCommands.getThisWeekSchedule(currentUser)));
+                        logScheduleSuccess("цей тиждень", chatId);
+                    }
+                    case AWAITING_NEXT_WEEK_SCHEDULE -> {
+                        logScheduleAttempt("наступний тиждень", chatId);
+                        sendPhoto = getSendPhoto(chatId, """
+                                %s Розклад на наступний тиждень:
+
+                                %s
+                                """.formatted(EmojiList.NERD_FACE, UserCommands.getNextWeekSchedule(currentUser)));
+                        logScheduleSuccess("наступний тиждень", chatId);
+                    }
+                    case AWAITING_THIS_DAY_SCHEDULE -> {
+                        logScheduleAttempt("цей день", chatId);
+                        sendPhoto = getSendPhoto(chatId, """
+                                %s Розклад на сьогодні:
+
+                                %s
+                                """.formatted(EmojiList.NERD_FACE, UserCommands.getThisDaySchedule(currentUser)));
+                        logScheduleSuccess("цей день", chatId);
+                    }
+                    case AWAITING_NEXT_DAY_SCHEDULE -> {
+                        logScheduleAttempt("наступний день", chatId);
+                        sendPhoto = getSendPhoto(chatId, """
+                                %s Розклад на завтра:
+
+                                %s
+                                """.formatted(EmojiList.NERD_FACE, UserCommands.getTomorrowSchedule(currentUser)));
+                        logScheduleSuccess("наступний день", chatId);
+                    }
+                }
+            } catch (IOException exception) {
+                logScheduleError(chatId, exception);
+                sendPhoto.setCaption("""
+                        Щось пішло не так :(
+                        Спробуйте пізніше.
+                        """);
+            } finally {
+                sendPhoto.setReplyMarkup(KeyBoardFactory.getBackButton());
+                try {
+                    abilityBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    log.error("Помилка під час відправлення повідомлення для користувача з id {}", chatId, e);
+                }
+                currentUser.setState(UserState.IDLE);
+            }
+        });
+    }
+
+    private void logScheduleAttempt(String period, long chatId) {
+        System.out.printf("Розпочато спробу отримання розкладу на %s для користувача з id %d%n", period, chatId);
+        log.info("Розпочато спробу отримання розкладу на {} для користувача з id {}", period, chatId);
+    }
+
+    private void logScheduleSuccess(String period, long chatId) {
+        System.out.printf("Успішно завершено спробу отримання розкладу на %s для користувача з id %d%n", period, chatId);
+        log.info("Успішно завершено спробу отримання розкладу на {} для користувача з id {}", period, chatId);
+    }
+
+    private void logScheduleError(long chatId, IOException exception) {
+        System.out.printf("Виникла помилка під час отримання розкладу для користувача з id %d. Повідомлення помилки: %s%n", chatId, exception.getMessage());
+        log.error("Виникла помилка під час отримання розкладу для користувача з id {}. Повідомлення помилки: {}", chatId, exception.getMessage());
     }
 
     public void getCustomSchedulePrepare(User currentUser, long chatId) {
@@ -451,22 +430,11 @@ public class ResponseHandler {
                 """, chatId);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-        System.out.println(currentUser.getGroup() == null);
-        System.out.println(currentUser.getChatID());
         if (currentUser.getGroup() == null) {
-            String stringBuffer = (currentUser.getLastPinnedMessageId() == null ? "Схоже, що ви не зареєстровані.\n" :
-                    "Для того, щоб змінити дані,\n") +
-                    """
-                            Будь-ласка, виберіть Вашу группу.
-                            Групи, які наразі підтримуються:
-                            """;
-            sendMessage.enableHtml(true);
-            sendMessage.setReplyMarkup(KeyBoardFactory.getGroupsKeyboardInline());
-            sendMessage.setText(stringBuffer);
             currentUser.setState(AWAITING_INPUT);
         } else {
             sendMessage.setText(UserCommands.getUserSettings(currentUser));
-            sendMessage.setReplyMarkup(KeyBoardFactory.changeGroup());
+            sendMessage.setReplyMarkup(KeyBoardFactory.getSettings(currentUser.isAreInBroadcastGroup()));
         }
         sender.execute(sendMessage);
         System.out.printf("""
@@ -488,16 +456,20 @@ public class ResponseHandler {
         sendMessage.setChatId(chatId);
         String group = update.hasMessage() ? update.getMessage().getText().toUpperCase() : update.getCallbackQuery().getData();
         if (GroupDB.getGroups().containsKey(group)) {
-            System.out.println("==================");
-            currentUser.getLastMessages().addLast(update.getCallbackQuery().getData());
-            System.out.println(currentUser.getLastMessages());
             sendMessage.setText("Ваша група: %s?".formatted(group));
             sendMessage.setReplyMarkup(KeyBoardFactory.getYesOrNoInline());
             currentUser.getLastMessages().addLast(update.getCallbackQuery().getData());
-            System.out.println(currentUser.getLastMessages());
         } else {
-            sendMessage.setText("Такої групи не існує!");
-            sendMessage.setReplyMarkup(KeyBoardFactory.deleteKeyBoard());
+            String stringBuffer = (currentUser.getGroup() == null ? "Схоже, що ви не зареєстровані.\n" :
+                    "Для того, щоб змінити дані,\n") +
+                    """
+                            Будь-ласка, виберіть Вашу группу.
+                            Групи, які наразі підтримуються:
+                            """;
+            sendMessage.enableHtml(true);
+            sendMessage.setReplyMarkup(KeyBoardFactory.getGroupsKeyboardInline());
+            sendMessage.setText(stringBuffer);
+            currentUser.setState(AWAITING_INPUT);
         }
         sender.execute(sendMessage);
     }
@@ -521,67 +493,6 @@ public class ResponseHandler {
         log.info("""
                 Завершено спробу зареєструвати користувача з id {}
                 """, chatId);
-    }
-
-    @Scheduled(cron = "0 0 18 * * *", zone = "Europe/Kiev")
-    public void broadcastAndPinTomorrowSchedule() {
-        System.out.printf("Час на сервері: %s%nЧас у Києві: %s%n",
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss dd.MM.yyyy")), DateUtils.timeOfNow());
-        log.warn("Час на сервері: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss dd.MM.yyyy")));
-        System.out.print("""
-                Розпочато широкомовну розсилку розписів на завтра
-                """);
-        log.info("Розпочато широкомовну розсилку розписів на завтра");
-        lock.lock();
-        try {
-            for (Map.Entry<Long, User> buff : UserDB.getAllUsers().entrySet()) {
-                User user = buff.getValue();
-                Long chatId = buff.getKey();
-                System.out.println(user.getState());
-                if (user.getLastPinnedMessageId() != null) {
-                    log.info("Розпочато видалення минулого закріпленого повідомлення користувача з id {}", chatId);
-                    UnpinChatMessage unpinMessage = new UnpinChatMessage(chatId.toString(), user.getLastPinnedMessageId());
-                    sender.execute(unpinMessage);
-                    log.info("Завершено видалення минулого закріпленого повідомлення користувача з id {}", chatId);
-                }
-                SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(chatId);
-                try {
-                    sendMessage.enableHtml(true);
-                    sendMessage.setParseMode("html");
-                    sendMessage.setText(UserCommands.getTomorrowSchedule(user));
-                    Optional<Message> message = sender.execute(sendMessage);
-                    if (message.isPresent()) {
-                        System.out.println("Є!");
-                        log.info("Розпочато закріплення повідомлення користувача з id {}", chatId);
-                        PinChatMessage pinMessage = new PinChatMessage(chatId.toString(), message.get().getMessageId());
-                        sender.execute(pinMessage);
-                        user.setLastPinnedMessageId(message.get().getMessageId());
-                        log.info("Успішно завершено закріплення повідомлення користувача з id {}", chatId);
-                        System.out.println(user.getState());
-                    } else {
-                        sendMessage.setText("""
-                                Не вдалося отримати розклад
-                                під час широкомовної розсилки :(""");
-                    }
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                    log.error("""
-                            Виникла помилка під час широкомовної розсилки розписів на завтра.
-                            Повідомлення помилки: {}
-                            """, exception.getMessage());
-                    sendMessage.setText("""
-                            Не вдалося отримати розклад :(
-                            Задача додалася до списку невиконаних завдань та буде зроблена.
-                            Очікуйте!
-                            """);
-                    sender.execute(sendMessage);
-                }
-            }
-        } finally {
-            lock.unlock();
-            log.info("Успішно закінчено широкомовну розсилку розписів на завтра");
-        }
     }
 
     public static void sendMessage(SilentSender sender, String params, String message) {
@@ -643,7 +554,6 @@ public class ResponseHandler {
         sender.execute(sendMessage);
         UserDB.getAllUsers().remove(chatId);
     }
-
     public static SilentSender getSilentSender() {
         return sender;
     }

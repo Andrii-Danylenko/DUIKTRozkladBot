@@ -152,7 +152,8 @@ public class FileUtils {
             UserRole role = UserRole.getUserRoleFromString((String) jsonObject.get("role"));
             UserState state = UserState.getUserStateFromString((String) jsonObject.get("state"));
             Integer lastPinnedMessage = lastPinnedMessageStr.equalsIgnoreCase("null") ? null : Integer.parseInt((String) jsonObject.get("lastPinnedMessage"));
-            User user = new User(chatId, group, faculty, course, state, role, lastPinnedMessage);
+            boolean areInBroadcastGroup = (Boolean) jsonObject.get("areInBroadcastGroup");
+            User user = new User(chatId, group, faculty, course, state, role, lastPinnedMessage, areInBroadcastGroup);
             userMap.put(chatId, user);
         }
         return userMap;

@@ -3,42 +3,36 @@ package org.rozkladbot.factories;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.constants.EmojiList;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class KeyBoardFactory {
-    public static ReplyKeyboardMarkup getYesOrNo() {
-        List<KeyboardRow> keyboardRows = new ArrayList<>() {{
-            add(new KeyboardRow() {{
-                add("Так");
-            }});
-            add(new KeyboardRow() {{
-                add("Ні");
-            }});
-        }};
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup(keyboardRows);
-        replyKeyboardMarkup.setOneTimeKeyboard(true);
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);
-        return replyKeyboardMarkup;
-    }
 
     public static ReplyKeyboardRemove deleteKeyBoard() {
         return new ReplyKeyboardRemove(true);
     }
 
-    public static InlineKeyboardMarkup changeGroup() {
+    public static InlineKeyboardMarkup getSettings(boolean isInBroadCast) {
         return new InlineKeyboardMarkup(new ArrayList<>() {{
             add(new ArrayList<>() {{
                 InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                 inlineKeyboardButton.setText("Змінити групу");
                 inlineKeyboardButton.setCallbackData("ЗГ");
+                add(inlineKeyboardButton);
+            }});
+            add(new ArrayList<>() {{
+                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+                inlineKeyboardButton.setText(isInBroadCast ? "Вимкнути заплановані сповіщення" : "Увімкнути заплановані сповіщення");
+                inlineKeyboardButton.setCallbackData(isInBroadCast ? "DIS" : "ENA");
+                add(inlineKeyboardButton);
+            }});
+            add(new ArrayList<>() {{
+                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+                inlineKeyboardButton.setText("Повідомити про помилку");
+                inlineKeyboardButton.setUrl("https://t.me/optionalOfNullable");
                 add(inlineKeyboardButton);
             }});
             add(new ArrayList<>() {{
@@ -98,12 +92,19 @@ public final class KeyBoardFactory {
         InlineKeyboardButton noButton = new InlineKeyboardButton();
         noButton.setText(EmojiList.FALSE);
         noButton.setCallbackData("НІ");
+        InlineKeyboardButton backButton = new InlineKeyboardButton();
+        backButton.setText("Назад");
+        backButton.setCallbackData("НАЗАД");
         List<InlineKeyboardButton> row = new ArrayList<>() {{
             add(yesButton);
             add(noButton);
         }};
+        List<InlineKeyboardButton> row2 = new ArrayList<>() {{
+            add(backButton);
+        }};
         List<List<InlineKeyboardButton>> rows = new ArrayList<>() {{
             add(row);
+            add(row2);
         }};
         return new InlineKeyboardMarkup(rows);
     }
