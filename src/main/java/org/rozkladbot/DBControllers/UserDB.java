@@ -30,7 +30,7 @@ public class UserDB {
                    }"""
                 .formatted(
                            user.getChatID(),
-                           user.getGroup().getGroup(),
+                           user.getGroup().getGroupName(),
                            user.getState(),
                            user.getRole(),
                            user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),

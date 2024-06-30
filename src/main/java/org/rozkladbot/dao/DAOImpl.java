@@ -2,6 +2,7 @@ package org.rozkladbot.dao;
 
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.Table;
+import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.DAO;
 import org.rozkladbot.utils.DateUtils;
 import org.rozkladbot.utils.ScheduleParser;
@@ -14,7 +15,6 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Repository("DAOImpl")
 public class DAOImpl implements DAO {
@@ -40,70 +40,70 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getWeeklyTable(String group, String course) {
+    public Table getWeeklyTable(User user) {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
-            put("group", group);
-            put("course", course);
+            put("group", String.valueOf(user.getGroup().getGroupNumber()));
+            put("course", user.getGroup().getCourse());
             put("dateFrom", DateUtils.toString(startOfWeek));
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(6)));
             put("faculty", "1");
         }};
-        return getTable(group, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
+        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
     @Override
-    public Table getNextWeekTable(String group, String course) {
+    public Table getNextWeekTable(User user) {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
-            put("group", group);
-            put("course", course);
+            put("group", String.valueOf(user.getGroup().getGroupNumber()));
+            put("course", user.getGroup().getCourse());
             put("dateFrom", DateUtils.toString(startOfWeek.plusDays(7)));
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(13)));
             put("faculty", "1");
         }};
-        return getTable(group, params, UserState.AWAITING_NEXT_WEEK_SCHEDULE);
+        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_NEXT_WEEK_SCHEDULE);
     }
 
     @Override
-    public Table getTodayTable(String group, String course) {
+    public Table getTodayTable(User user) {
         HashMap<String, String> params = new HashMap<>() {{
-            put("group", group);
-            put("course", course);
+            put("group", String.valueOf(user.getGroup().getGroupNumber()));
+            put("course", user.getGroup().getCourse());
             put("dateFrom", DateUtils.getTodayDateString());
             put("dateTo", DateUtils.getTodayDateString());
             put("faculty", "1");
         }};
-        return getTable(group, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
+        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
     @Override
-    public Table getTomorrowTable(String group, String course) {
+    public Table getTomorrowTable(User user) {
         HashMap<String, String> params = new HashMap<>() {{
-            put("group", group);
-            put("course", course);
+            put("group", String.valueOf(user.getGroup().getGroupNumber()));
+            put("course", user.getGroup().getCourse());
             put("dateFrom", DateUtils.toString(DateUtils.getTodayDate().plusDays(1)));
             put("dateTo", DateUtils.toString(DateUtils.getTodayDate().plusDays(1)));
             put("faculty", "1");
         }};
-        return getTable(group, params, DateUtils.getDayOfWeek(DateUtils.getTodayDateString()).equalsIgnoreCase("Неділя")
+        return getTable(user.getGroup().getGroupName(), params, DateUtils.getDayOfWeek(DateUtils.getTodayDateString()).equalsIgnoreCase("Неділя")
                 ? UserState.AWAITING_NEXT_WEEK_SCHEDULE : UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
     @Override
-    public Table getCustomTable(String group, String dateFrom, String dateTo, String course) {
+    public Table getCustomTable(User user, String dateFrom, String dateTo) {
         if (DateUtils.parseDate(dateTo).isBefore(DateUtils.parseDate(dateFrom))) {
             dateTo = DateUtils.toString(DateUtils.getTodayDate().plusDays(1));
         }
         String finalDateTo = dateTo;
         HashMap<String, String> params = new HashMap<>() {{
-            put("group", group);
+            put("group", String.valueOf(user.getGroup().getGroupNumber()));
             put("dateFrom", dateFrom);
             put("dateTo", finalDateTo);
-            put("course", course);
+            put("course", user.getGroup().getCourse());
             put("faculty", "1");
         }};
-        return getTable(group, params, UserState.IDLE);
+        return getTable(user.getGroup().getGroupName(), params, UserState.IDLE);
     }
 
     private Table getTable(String group, HashMap<String, String> params, UserState userState) {

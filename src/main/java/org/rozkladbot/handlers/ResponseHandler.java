@@ -425,21 +425,20 @@ public class ResponseHandler {
                     Розпочато спробу отримати розклад для користувача з id {%d}.
                     Дата для отримання: з {%s} по {%s}""".formatted(chatId, data[1], data[2]));
             Table response = DAOImpl.getInstance()
-                    .getCustomTable(String.valueOf(GroupDB.getGroups().get(data[0])), data[1],
-                            DateUtils.toString(DateUtils.parseDate(data[2]).plusDays(1)),
-                            String.valueOf(data[0].charAt(data[0].indexOf('-') + 1)));
+                    .getCustomTable(currentUser, data[1],
+                            DateUtils.toString(DateUtils.parseDate(data[2]).plusDays(1)));
             log.logIfSuccess("""
                     Успішно завершено спробу отримати розклад для користувача з id {%d}.
                     Дата для отримання: з {%s} по {%s}""".formatted(chatId, data[1], data[2]));
             int weekDelimiter = 0;
             int finish = response.getTable().size();
             int globalCounter = 0;
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (DayOfWeek day : response.getTable()) {
                 weekDelimiter++;
                 globalCounter++;
                 if (globalCounter == finish) {
-                    sendMessage(currentUser, buffer.toString(), KeyBoardFactory.getBackButton(), false);
+                    sendMessage(currentUser, buffer.toString(), null, false);
                 }
                 if (weekDelimiter == 7) {
                     sendMessage(currentUser, buffer.toString(), null, false);
@@ -448,6 +447,10 @@ public class ResponseHandler {
                 }
                 buffer.append(day.toStringIfMany()).append('\n');
             }
+            sendMessage(currentUser, """
+                    Натисни кнопку,
+                    щоб повернутися до головного меню
+                    """, KeyBoardFactory.getBackButton(), false);
             currentUser.setState(IDLE);
             log.logIfSuccess("""
                     Успішно завершено спробу отримати дані для отримання розкладу за власними параметрами
@@ -484,9 +487,9 @@ public class ResponseHandler {
         String group = update.hasMessage() ? update.getMessage().getText().toUpperCase() : update.getCallbackQuery().getData();
         if (currentUser.getState() == AWAITING_COURSE) {
             sendMessage(currentUser, """
-                        Виберіть курс.
-                        Курси, які наразі підтримуються:
-                        """, KeyBoardFactory.getCourseKeyBoard(currentUser), true);
+                    Виберіть курс.
+                    Курси, які наразі підтримуються:
+                    """, KeyBoardFactory.getCourseKeyBoard(currentUser), true);
         } else if (currentUser.getState() == AWAITING_GROUP) {
             if (GroupDB.getGroups().containsKey(group)) {
                 sendMessage(currentUser, "Ваша група: %s?".formatted(group), KeyBoardFactory.getYesOrNoInline(), true);

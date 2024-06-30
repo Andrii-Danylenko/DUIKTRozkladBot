@@ -26,6 +26,7 @@ public class Requester {
 
     public static String makeRequest(String baseUrl, HashMap<String, String> params) throws IOException {
         URL url = new URL(baseUrl + requestBuilder.getParameters(params));
+        System.out.println(url);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setConnectTimeout(5000);

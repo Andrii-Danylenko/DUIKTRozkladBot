@@ -2,11 +2,8 @@ package org.rozkladbot.entities;
 
 import org.rozkladbot.constants.UserRole;
 import org.rozkladbot.constants.UserState;
-import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.utils.LimitedDeque;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -96,7 +93,7 @@ public class User implements Serializable {
                 Група: %s
                 Курс: %s
                 Роль: %s
-                """.formatted(chatID, group.getGroup(), group.getCourse(), role);
+                """.formatted(chatID, group.getGroupName(), group.getCourse(), role);
     }
 
     public UserRole getRole() {

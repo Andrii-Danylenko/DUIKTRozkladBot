@@ -47,31 +47,26 @@ public class ScheduleBroadcaster {
     }
 
     private void processUser(Long chatId, User user) {
-        try {
-            if (user.getLastPinnedMessageId() != null) {
-                log.info("Розпочато видалення минулого закріпленого повідомлення користувача з id {}", chatId);
-                UnpinChatMessage unpinMessage = new UnpinChatMessage(chatId.toString(), user.getLastPinnedMessageId());
-                sender.execute(unpinMessage);
-                log.info("Завершено видалення минулого закріпленого повідомлення користувача з id {}", chatId);
-            }
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
-            sendMessage.enableHtml(true);
-            sendMessage.setParseMode("html");
-            sendMessage.setText(UserCommands.getTomorrowSchedule(user));
-            Optional<Message> message = sender.execute(sendMessage);
-            if (message.isPresent()) {
-                log.info("Розпочато закріплення повідомлення користувача з id {}", chatId);
-                PinChatMessage pinMessage = new PinChatMessage(chatId.toString(), message.get().getMessageId());
-                sender.execute(pinMessage);
-                user.setLastPinnedMessageId(message.get().getMessageId());
-                log.info("Успішно завершено закріплення повідомлення користувача з id {}", chatId);
-            } else {
-                sendMessage.setText("Не вдалося отримати розклад під час широкомовної розсилки :(");
-            }
-        } catch (IOException exception) {
-            log.error("Виникла помилка під час широкомовної розсилки розписів на завтра. Повідомлення помилки: {}", exception.getMessage());
-            sendMessageOnError(chatId);
+        if (user.getLastPinnedMessageId() != null) {
+            log.info("Розпочато видалення минулого закріпленого повідомлення користувача з id {}", chatId);
+            UnpinChatMessage unpinMessage = new UnpinChatMessage(chatId.toString(), user.getLastPinnedMessageId());
+            sender.execute(unpinMessage);
+            log.info("Завершено видалення минулого закріпленого повідомлення користувача з id {}", chatId);
+        }
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.enableHtml(true);
+        sendMessage.setParseMode("html");
+        sendMessage.setText(UserCommands.getTomorrowSchedule(user));
+        Optional<Message> message = sender.execute(sendMessage);
+        if (message.isPresent()) {
+            log.info("Розпочато закріплення повідомлення користувача з id {}", chatId);
+            PinChatMessage pinMessage = new PinChatMessage(chatId.toString(), message.get().getMessageId());
+            sender.execute(pinMessage);
+            user.setLastPinnedMessageId(message.get().getMessageId());
+            log.info("Успішно завершено закріплення повідомлення користувача з id {}", chatId);
+        } else {
+            sendMessage.setText("Не вдалося отримати розклад під час широкомовної розсилки :(");
         }
     }
 

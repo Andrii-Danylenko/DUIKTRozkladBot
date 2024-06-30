@@ -122,7 +122,7 @@ public final class KeyBoardFactory {
             }};
     }
     public static InlineKeyboardMarkup getGroupsKeyboardInline(User currentUser) {
-        List<String> groups = GroupDB.getGroups().values().stream().filter(group -> group.getCourse().equals(currentUser.getLastMessages().getLast()) && group.getInstitute().equals(currentUser.getLastMessages().getFirst())).map(Group::getGroup).sorted().toList();
+        List<String> groups = GroupDB.getGroups().values().stream().filter(group -> group.getCourse().equals(currentUser.getLastMessages().getLast()) && group.getInstitute().equals(currentUser.getLastMessages().getFirst())).map(Group::getGroupName).sorted().toList();
         List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(groups, 4);
         buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого інститута?"));
         return new InlineKeyboardMarkup(buttons);

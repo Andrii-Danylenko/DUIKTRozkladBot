@@ -21,31 +21,30 @@ public final class UserCommands {
                 /settings - змінити налаштування.""";
     }
     public static String getThisDaySchedule(User user) {
-        return dao.getTodayTable(GroupDB.getGroups().get(user.getGroup().getGroup()).toString(), user.getGroup().getCourse()).toString();
+        return dao.getTodayTable(user).toString();
     }
     public static String getThisWeekSchedule(User user) {
-        return dao.getWeeklyTable(GroupDB.getGroups().get(user.getGroup().getGroup()).toString(), user.getGroup().getCourse()).toString();
+        return dao.getWeeklyTable(user).toString();
     }
     public static String getNextWeekSchedule(User user) {
-        return dao.getNextWeekTable(GroupDB.getGroups().get(user.getGroup().getGroup()).toString(), user.getGroup().getCourse()).toString();
+        return dao.getNextWeekTable(user).toString();
     }
-    public static String getTomorrowSchedule(User user) throws IOException {
-        return dao.getTomorrowTable(GroupDB.getGroups().get(user.getGroup().getGroup()).toString(), user.getGroup().getCourse()).toString();
+    public static String getTomorrowSchedule(User user) {
+        return dao.getTomorrowTable(user).toString();
     }
-    public static String getCustomSchedule(String group, String dateFrom, String dateTo) throws IOException {
-        return dao.getCustomTable(GroupDB.getGroups().get(group).toString(), dateFrom, dateTo, String.valueOf(group.split("-")[1].charAt(0))).toString();
+    public static String getCustomSchedule(User user, String dateFrom, String dateTo) {
+        return dao.getCustomTable(user, dateFrom, dateTo).toString();
     }
     public static String getUserSettings(User user) {
-        String str = """
+        return """
                Група: %s
                Номер групи: %d
                Курс: %s
                Щоденні повідомлення: %s
-               """.formatted(user.getGroup().getGroup(),
+               """.formatted(user.getGroup().getGroupName(),
                 user.getGroup().getGroupNumber(),
                 user.getGroup().getCourse(),
                 user.isAreInBroadcastGroup() ? "увімкнені" : "вимкнені");
-        return str;
     }
     public static void finishRegistration(User user) {
         String group = user.getLastMessages().getLast().toUpperCase();

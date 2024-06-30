@@ -1,7 +1,7 @@
 package org.rozkladbot.entities;
 
 public class Group {
-    private String group;
+    private String groupName;
     private String faculty = "1";
     private String course;
     private String institute;
@@ -11,30 +11,30 @@ public class Group {
 
     }
 
-    public Group(String institute, String group, String faculty, long groupNumber, String course) {
-        this.group = group;
+    public Group(String institute, String groupName, String faculty, long groupNumber, String course) {
+        this.groupName = groupName;
         this.course = course;
         this.institute = institute;
         this.groupNumber = groupNumber;
     }
-    public Group(String group, String course, String institute) {
-        this.group = group;
+    public Group(String groupName, String course, String institute) {
+        this.groupName = groupName;
         this.course = course;
         this.institute = institute;
     }
-    public Group(String group, String course, String faculty, String institute) {
-        this.group = group;
+    public Group(String groupName, String course, String faculty, String institute) {
+        this.groupName = groupName;
         this.course = course;
         this.institute = institute;
         this.faculty = faculty;
     }
 
-    public String getGroup() {
-        return group;
+    public String getGroupName() {
+        return groupName;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public String getFaculty() {

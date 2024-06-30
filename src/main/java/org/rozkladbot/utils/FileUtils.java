@@ -157,7 +157,6 @@ public class FileUtils {
             User user = new User(chatId, group, state, role, lastPinnedMessage, areInBroadcastGroup, lastSentMessage);
             userMap.put(chatId, user);
         }
-        System.out.println(userMap);
         return userMap;
     }
 

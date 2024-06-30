@@ -29,8 +29,6 @@ public class GroupDB {
     private static void parseFile() {
         try {
             groups = new ConcurrentHashMap<>(FileUtils.deserializeGroups());
-            System.out.printf("""
-                    Групи, які завантажилися: %s%n""", groups);
         } catch (IOException | ParseException exception) {
             try {
                 System.out.println("Здається, що списку груп немає...Спробую створити.");
