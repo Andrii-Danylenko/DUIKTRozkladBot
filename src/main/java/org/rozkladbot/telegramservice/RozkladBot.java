@@ -17,7 +17,9 @@ import org.telegram.abilitybots.api.objects.Reply;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -54,13 +56,15 @@ public class RozkladBot extends AbilityBot {
                 .locality(ALL)
                 .privacy(PUBLIC)
                 .action(ctx -> {
-                    responseHandler.replyToStart(ctx.chatId());
+                    responseHandler.replyToStart(ctx.update(), ctx.chatId());
                 })
                 .build();
     }
 
     public Reply replyToButtons() {
-        BiConsumer<BaseAbilityBot, Update> action = (abilityBot, upd) -> responseHandler.replyToButtons(getChatId(upd), upd);
+        BiConsumer<BaseAbilityBot, Update> action = (abilityBot, upd) -> {
+            responseHandler.replyToButtons(getChatId(upd), upd);
+        };
         return Reply.of(action, upd -> {
             long chatId = getChatId(upd);
             return responseHandler.userIsActive(chatId) && (upd.hasMessage() || upd.hasCallbackQuery());

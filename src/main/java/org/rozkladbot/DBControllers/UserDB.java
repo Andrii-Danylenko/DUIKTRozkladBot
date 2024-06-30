@@ -22,22 +22,20 @@ public class UserDB {
                    {
                        "chatId": "%s",
                        "group": "%s",
-                       "faculty": "%s",
-                       "course": "%s",
                        "state": "%s",
                        "role": "%s",
                        "lastPinnedMessage": "%s",
-                       "areInBroadcastGroup": "%s"
+                       "areInBroadcastGroup": %b,
+                       "lastSentMessage": %d
                    }"""
                 .formatted(
                            user.getChatID(),
-                           user.getGroup(),
-                           user.getFaculty(),
-                           user.getCourse(),
+                           user.getGroup().getGroup(),
                            user.getState(),
                            user.getRole(),
                            user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),
-                           user.isAreInBroadcastGroup());
+                           user.isAreInBroadcastGroup(),
+                           user.getLastSentMessage());
 
     }
 
@@ -49,6 +47,7 @@ public class UserDB {
             users = FileUtils.deserializeUsers();
         } catch (IOException exception) {
             System.out.println("Помилка під час виконання.");
+            exception.printStackTrace();
         } catch (ParseException exception) {
             System.out.println("Помилка під час парсингу json файлу.");
         }

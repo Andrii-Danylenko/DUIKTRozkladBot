@@ -26,7 +26,7 @@ public class ScheduleBroadcaster {
     private static final Logger log = LoggerFactory.getLogger(ScheduleBroadcaster.class);
     private final SilentSender sender = ResponseHandler.getSilentSender();
 
-    @Scheduled(cron = "0 0 18 * * *", zone = "Europe/Kiev")
+    @Scheduled(cron = "0 0 19 * * *", zone = "Europe/Kiev")
     public void broadcastAndPinTomorrowSchedule() {
         System.out.printf("Час на сервері: %s%nЧас у Києві: %s%n",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss dd.MM.yyyy")), DateUtils.timeOfNow());
@@ -54,13 +54,11 @@ public class ScheduleBroadcaster {
                 sender.execute(unpinMessage);
                 log.info("Завершено видалення минулого закріпленого повідомлення користувача з id {}", chatId);
             }
-
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.enableHtml(true);
             sendMessage.setParseMode("html");
             sendMessage.setText(UserCommands.getTomorrowSchedule(user));
-
             Optional<Message> message = sender.execute(sendMessage);
             if (message.isPresent()) {
                 log.info("Розпочато закріплення повідомлення користувача з id {}", chatId);

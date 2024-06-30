@@ -2,12 +2,14 @@ package org.rozkladbot.factories;
 
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.constants.EmojiList;
+import org.rozkladbot.entities.Group;
+import org.rozkladbot.entities.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class KeyBoardFactory {
 
@@ -99,41 +101,73 @@ public final class KeyBoardFactory {
             add(yesButton);
             add(noButton);
         }};
-        List<InlineKeyboardButton> row2 = new ArrayList<>() {{
-            add(backButton);
-        }};
         List<List<InlineKeyboardButton>> rows = new ArrayList<>() {{
             add(row);
-            add(row2);
+            add(getBackButtonAsList());
         }};
         return new InlineKeyboardMarkup(rows);
     }
     public static InlineKeyboardMarkup getBackButton() {
         return new InlineKeyboardMarkup(new ArrayList<>() {{
-            add(new ArrayList<>() {{
+            add(getBackButtonAsList());
+        }});
+    }
+
+    private static List<InlineKeyboardButton> getBackButtonAsList() {
+        return new ArrayList<>() {{
                 InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
                 inlineKeyboardButton.setText("Назад");
                 inlineKeyboardButton.setCallbackData("НАЗАД");
                 add(inlineKeyboardButton);
-            }});
-        }});
+            }};
     }
-    public static InlineKeyboardMarkup getGroupsKeyboardInline() {
-        List<String> groups = GroupDB.getGroups().keySet().stream().sorted().toList();
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<InlineKeyboardButton> keyboardRows = new ArrayList<>();
-        int i = 0;
-        for (String group : groups) {
-            if (i > 0 && i % 4 == 0) {
-                buttons.add(keyboardRows);
-                keyboardRows = new ArrayList<>();
-            }
-            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            inlineKeyboardButton.setCallbackData(group);
-            inlineKeyboardButton.setText(group);
-            keyboardRows.add(inlineKeyboardButton);
-            i++;
-        }
+    public static InlineKeyboardMarkup getGroupsKeyboardInline(User currentUser) {
+        List<String> groups = GroupDB.getGroups().values().stream().filter(group -> group.getCourse().equals(currentUser.getLastMessages().getLast()) && group.getInstitute().equals(currentUser.getLastMessages().getFirst())).map(Group::getGroup).sorted().toList();
+        List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(groups, 4);
+        buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого інститута?"));
         return new InlineKeyboardMarkup(buttons);
+    }
+    public static InlineKeyboardMarkup getInstitutesKeyboardInline() {
+        Set<String> institutes = GroupDB.getGroups().values().stream().map(Group::getInstitute).collect(Collectors.toSet());
+        List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(institutes, 1);
+        buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого інститута?"));
+        return new InlineKeyboardMarkup(buttons);
+    }
+    public static InlineKeyboardMarkup getCourseKeyBoard(User currentUser) {
+        Set<String> courses = GroupDB.getGroups().values().stream()
+                .filter(x -> x.getInstitute().equalsIgnoreCase(currentUser.getLastMessages().getLast()))
+                .map(Group::getCourse).collect(Collectors.toSet());
+        List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(courses, 1);
+        buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого курса?"));
+        return new InlineKeyboardMarkup(buttons);
+    }
+
+    private static List<InlineKeyboardButton> getLinkButton(String url, String text) {
+        return new ArrayList<>() {{
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+            inlineKeyboardButton.setText(text);
+            inlineKeyboardButton.setUrl(url);
+            add(inlineKeyboardButton);
+        }};
+    }
+    private static List<List<InlineKeyboardButton>> buildKeyBoardFromData(Collection<String> collection, int separator) {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<InlineKeyboardButton> keyboardRow = new ArrayList<>();
+        int i = 0;
+        for (String value : collection) {
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+            inlineKeyboardButton.setCallbackData(value);
+            inlineKeyboardButton.setText(value);
+            keyboardRow.add(inlineKeyboardButton);
+            if (++i % separator == 0) {
+                buttons.add(keyboardRow);
+                keyboardRow = new ArrayList<>();
+            }
+        }
+        if (!keyboardRow.isEmpty()) {
+            buttons.add(keyboardRow);
+        }
+        buttons.add(getBackButtonAsList());
+        return buttons;
     }
 }

@@ -15,27 +15,25 @@ import java.util.HashMap;
 @Component
 public class User implements Serializable {
     private long chatID;
-    private String group;
-    private String faculty = "1";
-    private String course;
+    private Group group;
     private UserState state;
     private ArrayDeque<String> lastMessages = new LimitedDeque<>(2);
     private Integer lastPinnedMessageId;
     private UserRole role;
     private boolean areInBroadcastGroup = true;
+    private long lastSentMessage = 0;
 
     public User(long chatID) {
         this.chatID = chatID;
     }
-    public User(long chatID, String group, String faculty, String course, UserState userState, UserRole userRole, Integer lastPinnedMessageId, boolean areInBroadcastGroup) {
+    public User(long chatID, Group group, UserState userState, UserRole userRole, Integer lastPinnedMessageId, boolean areInBroadcastGroup, long lastSentMessage) {
         this.chatID = chatID;
         this.group = group;
-        this.faculty = faculty;
-        this.course = course;
         this.state = userState;
         this.role = userRole;
         this.lastPinnedMessageId = lastPinnedMessageId;
         this.areInBroadcastGroup = areInBroadcastGroup;
+        this.lastSentMessage = lastSentMessage;
     }
 
     public User(long chatID, UserState userState) {
@@ -71,38 +69,19 @@ public class User implements Serializable {
         this.lastMessages = lastMessages;
     }
 
-    public String getGroup() {
+    public Group getGroup() {
         return group;
     }
 
-    public void setGroup(String group) {
+    public void setGroup(Group group) {
         this.group = group;
-    }
-
-    public String getFaculty() {
-        return faculty;
-    }
-
-    public void setFaculty(String faculty) {
-        this.faculty = faculty;
-    }
-
-    public String getCourse() {
-        return course;
-    }
-
-    public void setCourse(String course) {
-        this.course = course;
     }
     public HashMap<String, String> getUserParams() {
         return new HashMap<>() {{
-            put("course", course);
-            put("faculty", faculty);
-            put("group", getGroupNumber().toString());
+            put("course", group.getCourse());
+            put("faculty", group.getFaculty());
+            put("group", group.getGroupNumber() + "");
         }};
-    }
-    public Long getGroupNumber() {
-        return GroupDB.getGroups().get(group);
     }
     public Integer getLastPinnedMessageId() {
         return lastPinnedMessageId;
@@ -117,7 +96,7 @@ public class User implements Serializable {
                 Група: %s
                 Курс: %s
                 Роль: %s
-                """.formatted(chatID, group, course, role);
+                """.formatted(chatID, group.getGroup(), group.getCourse(), role);
     }
 
     public UserRole getRole() {
@@ -134,5 +113,11 @@ public class User implements Serializable {
 
     public void setAreInBroadcastGroup(boolean areInBroadcastGroup) {
         this.areInBroadcastGroup = areInBroadcastGroup;
+    }
+    public void setLastSentMessage(long lastSentMessage) {
+        this.lastSentMessage = lastSentMessage;
+    }
+    public long getLastSentMessage() {
+        return lastSentMessage;
     }
 }

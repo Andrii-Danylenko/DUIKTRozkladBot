@@ -47,22 +47,15 @@ public class DayOfWeek {
     }
 
     public static String getAmountOfPairs(DayOfWeek day) {
-        switch (day.pairsList.size()) {
-            case 1:
-                return "(1 пара)";
-            case 2:
-                return "(2 пари)";
-            case 3:
-                return "(3 пари)";
-            case 4:
-                return "(4 пари)";
-            case 5:
-                return "(5 пар)";
-            case 6:
-                return "(6 пар)";
-            default:
-                return "(пар немає)";
-        }
+        return switch (day.pairsList.size()) {
+            case 1 -> "(1 пара)";
+            case 2 -> "(2 пари)";
+            case 3 -> "(3 пари)";
+            case 4 -> "(4 пари)";
+            case 5 -> "(5 пар)";
+            case 6 -> "(6 пар)";
+            default -> "(пар немає)";
+        };
     }
 
     public String toStringIfMany() {

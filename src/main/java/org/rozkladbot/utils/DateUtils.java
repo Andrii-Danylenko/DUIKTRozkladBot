@@ -33,9 +33,7 @@ public class DateUtils {
     }
 
     public static LocalDate getTodayDate() {
-        LocalDate localDate = ZonedDateTime.now(zoneId).toLocalDate();
-        System.out.println("getTodayDate() " + localDate);
-        return localDate;
+        return ZonedDateTime.now(zoneId).toLocalDate();
     }
 
     public static LocalDate parseDate(String date) {
@@ -47,9 +45,7 @@ public class DateUtils {
     }
 
     public static String getTodayDateString() {
-        String timeAsString = ZonedDateTime.now(zoneId).format(formatter);
-        System.out.println("getTodayDateString() " + timeAsString);
-        return timeAsString;
+        return ZonedDateTime.now(zoneId).format(formatter);
     }
 
     public static String toString(LocalDate date) {
@@ -103,7 +99,9 @@ public class DateUtils {
     }
     public static LocalDate instantToLocalDate(Instant instant) {
         LocalDate localDate = LocalDate.ofInstant(instant, zoneId);
-        System.out.println("instantToLocalDate() " + localDate);
         return localDate;
+    }
+    public static String now() {
+        return LocalDateTime.now(zoneId).format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS dd.MM.yyyy"));
     }
 }

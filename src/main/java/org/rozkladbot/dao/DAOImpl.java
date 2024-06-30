@@ -40,7 +40,7 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getWeeklyTable(String group, String course) throws IOException {
+    public Table getWeeklyTable(String group, String course) {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
             put("group", group);
@@ -53,7 +53,7 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getNextWeekTable(String group, String course) throws IOException {
+    public Table getNextWeekTable(String group, String course) {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
             put("group", group);
@@ -66,7 +66,7 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getTodayTable(String group, String course) throws IOException {
+    public Table getTodayTable(String group, String course) {
         HashMap<String, String> params = new HashMap<>() {{
             put("group", group);
             put("course", course);
@@ -78,7 +78,7 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getTomorrowTable(String group, String course) throws IOException {
+    public Table getTomorrowTable(String group, String course) {
         HashMap<String, String> params = new HashMap<>() {{
             put("group", group);
             put("course", course);
@@ -91,7 +91,7 @@ public class DAOImpl implements DAO {
     }
 
     @Override
-    public Table getCustomTable(String group, String dateFrom, String dateTo, String course) throws IOException {
+    public Table getCustomTable(String group, String dateFrom, String dateTo, String course) {
         if (DateUtils.parseDate(dateTo).isBefore(DateUtils.parseDate(dateFrom))) {
             dateTo = DateUtils.toString(DateUtils.getTodayDate().plusDays(1));
         }

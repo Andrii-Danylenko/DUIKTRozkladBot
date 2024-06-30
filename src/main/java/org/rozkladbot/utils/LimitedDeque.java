@@ -47,6 +47,8 @@ public class LimitedDeque<T> extends ArrayDeque<T> {
     }
     @Override
     public String toString() {
-        return "First: %s \nLast: %s".formatted(getFirst().toString(), getLast().toString());
+        String first = getFirst().toString() == null ? "null" : getFirst().toString();
+        String last = getLast().toString() == null ? "null" : getFirst().toString();
+        return "First: %s \nLast: %s".formatted(first, last);
     }
 }
