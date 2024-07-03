@@ -4,8 +4,9 @@ import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.DAO;
-import org.rozkladbot.utils.DateUtils;
-import org.rozkladbot.utils.ScheduleParser;
+import org.rozkladbot.utils.ConsoleLineLogger;
+import org.rozkladbot.utils.date.DateUtils;
+import org.rozkladbot.utils.schedule.ScheduleParser;
 import org.rozkladbot.web.Requester;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +22,7 @@ public class DAOImpl implements DAO {
     private final ScheduleParser parser = new ScheduleParser();
     private static final String baseUrl = "https://skedy.api.yacode.dev/v1/student/schedule?";
     private static volatile DAOImpl dao;
-
+    private static final ConsoleLineLogger<DAOImpl> log = new ConsoleLineLogger<>(DAOImpl.class);
     private DAOImpl() {
 
     }
@@ -49,7 +50,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(6)));
             put("faculty", "1");
         }};
-        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
+        return getTable(user, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(13)));
             put("faculty", "1");
         }};
-        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_NEXT_WEEK_SCHEDULE);
+        return getTable(user, params, UserState.AWAITING_NEXT_WEEK_SCHEDULE);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.getTodayDateString());
             put("faculty", "1");
         }};
-        return getTable(user.getGroup().getGroupName(), params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
+        return getTable(user, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
     @Override
@@ -86,7 +87,7 @@ public class DAOImpl implements DAO {
             put("dateTo", DateUtils.toString(DateUtils.getTodayDate().plusDays(1)));
             put("faculty", "1");
         }};
-        return getTable(user.getGroup().getGroupName(), params, DateUtils.getDayOfWeek(DateUtils.getTodayDateString()).equalsIgnoreCase("Неділя")
+        return getTable(user, params, DateUtils.getDayOfWeek(DateUtils.getTodayDateString()).equalsIgnoreCase("Неділя")
                 ? UserState.AWAITING_NEXT_WEEK_SCHEDULE : UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
 
@@ -103,17 +104,17 @@ public class DAOImpl implements DAO {
             put("course", user.getGroup().getCourse());
             put("faculty", "1");
         }};
-        return getTable(user.getGroup().getGroupName(), params, UserState.IDLE);
+        return getTable(user, params, UserState.IDLE);
     }
 
-    private Table getTable(String group, HashMap<String, String> params, UserState userState) {
+    private Table getTable(User user, HashMap<String, String> params, UserState userState) {
         Table table;
         try {
           table = CompletableFuture.supplyAsync(() -> {
                 try {
                     return Requester.makeRequest(baseUrl, params);
                 } catch (IOException e) {
-                    System.out.println("Помилка під час запиту до API!");
+                    log.error("Помилка під час запиту до API! Привід: %s".formatted(e.getCause()));
                     throw new RuntimeException(e);
                 }
             }, Executors.newSingleThreadExecutor()).exceptionally((ex) -> {
@@ -121,20 +122,20 @@ public class DAOImpl implements DAO {
                 String result;
                 try {
                     if (userState == UserState.AWAITING_THIS_WEEK_SCHEDULE) {
-                        result = Files.readString(Path.of("groupsSchedules/" + group + ".json"));
+                        result = Files.readString(Path.of("groupsSchedules/%s(%d)_thisWeek.json".formatted(user.getGroup().getGroupName(), user.getGroup().getGroupNumber())));
                     } else if (userState == UserState.AWAITING_NEXT_WEEK_SCHEDULE) {
-                        result = Files.readString(Path.of("groupsSchedules/" + group + "NextWeek.json"));
+                        result = Files.readString(Path.of("groupsSchedules/%s(%d)_nextWeek.json".formatted(user.getGroup().getGroupName(), user.getGroup().getGroupNumber())));
                     } else {
                         result = "";
                     }
                 } catch (IOException exception) {
-                    System.out.println("Помилка під час парсингу локального файлу!");
+                    log.error("Помилка під час парсингу локального файлу! Привід: %s".formatted(exception.getCause()));
                     throw new RuntimeException(exception);
                 }
                 return result;
             }).thenApply(result -> parser.getTable(result, params)).get();
         } catch (InterruptedException | ExecutionException e) {
-            System.out.printf("Помилка під час асинхронного виконання! Привід: %n%s", e.getCause());
+            log.error("Помилка під час асинхронного виконання! Привід: %n%s".formatted(e.getCause()));
             table = new Table();
         }
         return table;

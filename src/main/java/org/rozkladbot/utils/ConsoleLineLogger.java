@@ -1,5 +1,7 @@
 package org.rozkladbot.utils;
 
+import org.rozkladbot.constants.Colors;
+import org.rozkladbot.utils.date.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,21 +9,21 @@ import org.slf4j.LoggerFactory;
 public class ConsoleLineLogger<T> {
     private Class<T> type;
     private final Logger log;
-    public void logAttempt(String message) {
-        String logMessage = "[%s] %s%n".formatted(DateUtils.now(), message);
+    public void info(String message) {
+        String logMessage = "%s(%s) [%s] %s%s%n".formatted(Colors.ANSI_YELLOW, type.getSimpleName(), DateUtils.now(), message, Colors.ANSI_RESET);
         System.out.printf(logMessage);
         log.info(logMessage);
     }
 
-    public void logIfSuccess(String message) {
-        String logMessage = "[%s] %s%n".formatted(DateUtils.now(), message);
+    public void success(String message) {
+        String logMessage = "%s(%s) [%s] %s%s%n".formatted(Colors.ANSI_GREEN, type.getSimpleName(), DateUtils.now(), message, Colors.ANSI_RESET);
         System.out.printf(logMessage);
         log.info(logMessage);
     }
 
-    public void logIfError(String message) {
-        String logMessage = "[%s] %s%n".formatted(DateUtils.now(), message);
-        System.err.printf(logMessage);
+    public void error(String message) {
+        String logMessage = "%s(%s) [%s] %s%s%n".formatted(Colors.ANSI_RED, type.getSimpleName(), DateUtils.now(), message, Colors.ANSI_RESET);
+        System.out.printf(logMessage);
         log.error(logMessage);
     }
     public ConsoleLineLogger(Class<T> type) {

@@ -2,7 +2,8 @@ package org.rozkladbot.DBControllers;
 
 import org.json.simple.parser.ParseException;
 import org.rozkladbot.entities.Group;
-import org.rozkladbot.utils.FileUtils;
+import org.rozkladbot.utils.ConsoleLineLogger;
+import org.rozkladbot.utils.UserUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository("GroupDB")
 public class GroupDB {
     private static ConcurrentHashMap<String, Group> groups;
-
+    private static final ConsoleLineLogger<GroupDB> log = new ConsoleLineLogger<>(GroupDB.class);
     public GroupDB() {
 
     }
@@ -28,19 +29,19 @@ public class GroupDB {
 
     private static void parseFile() {
         try {
-            groups = new ConcurrentHashMap<>(FileUtils.deserializeGroups());
+            groups = new ConcurrentHashMap<>(UserUtils.deserializeGroups());
         } catch (IOException | ParseException exception) {
             try {
-                System.out.println("Здається, що списку груп немає...Спробую створити.");
+                log.info("Здається, що списку груп немає...Спробую створити.");
                 Path directoryPath = Paths.get("groups");
                 Path filePath = directoryPath.resolve("groupsList.json");
                 if (!Files.exists(filePath)) {
                     Files.createDirectories(directoryPath);
                     Files.createFile(filePath);
                 }
-                System.out.println("Файл-список групи створено успішно!");
+                log.success("Файл-список групи створено успішно!");
             } catch (IOException ioException) {
-                System.out.println("Помилка при створенні файлу-списку груп.");
+                log.error("Помилка при створенні файлу-списку груп.");
             }
         }
     }

@@ -2,8 +2,12 @@ package org.rozkladbot.handlers;
 
 import org.rozkladbot.entities.User;
 import org.rozkladbot.DBControllers.GroupDB;
-import org.rozkladbot.utils.FileUtils;
+import org.rozkladbot.utils.MessageSender;
+import org.rozkladbot.utils.UserUtils;
 import org.rozkladbot.DBControllers.UserDB;
+import org.rozkladbot.utils.schedule.ScheduleDumper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -12,10 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Component("AdminCommands")
 public class AdminCommands {
-    private static FileUtils fileUtils = new FileUtils();
-    private static SilentSender sender = ResponseHandler.getSilentSender();
+    private static UserUtils userUtils = new UserUtils();
+    private static ScheduleDumper scheduleDumper = new ScheduleDumper();
+    private static MessageSender messageSender;
+    @Autowired
+    public AdminCommands(MessageSender messageSender) {
+        AdminCommands.messageSender = messageSender;
+    }
     public static String getAllCommands() {
         return  """
                            /viewUsers - подивитися підключених юзерів
@@ -49,29 +58,29 @@ public class AdminCommands {
             switch (params[i]) {
                 case "-all" -> {
                     System.out.println("Починаю синхронізацію розкладів...");
-                    fileUtils.dumpSchedule(true);
+                    scheduleDumper.dumpSchedule(true);
                     System.out.println("Закінчив синхронізацію розкладів...");
                     System.out.println("Починаю синхронізацію користувачів...");
-                    fileUtils.serializeUsers();
+                    userUtils.serializeUsers();
                     System.out.println("Закінчив синхронізацію користувачів...");
                     System.out.println("Усі дані оновлено успішно!");
                     return;
                 }
                 case "-s" -> {
                     System.out.println("Починаю синхронізацію розкладів...");
-                    fileUtils.dumpSchedule(true);
+                    scheduleDumper.dumpSchedule(true);
                     System.out.println("Закінчив синхронізацію розкладів...");
                 }
                 case "-u" -> {
                     System.out.println("Починаю синхронізацію користувачів...");
-                    fileUtils.serializeUsers();
+                    userUtils.serializeUsers();
                     System.out.println("Закінчив синхронізацію користувачів...");
                 }
             }
         }
     }
     public static void sendMessage(String params) {
-        ResponseHandler.sendMessage(ResponseHandler.getSilentSender(), params, parseMessage(params));
+        messageSender.sendMessage(params, parseMessage(params));
     }
     public static void forceFetch() {
         GroupDB.fetchGroups();

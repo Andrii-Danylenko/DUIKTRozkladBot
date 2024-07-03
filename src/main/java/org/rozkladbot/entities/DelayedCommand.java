@@ -3,10 +3,12 @@ package org.rozkladbot.entities;
 import org.rozkladbot.constants.CommandFlags;
 
 import java.util.Objects;
-
+// TODO: Сделать отложенные команды
 public class DelayedCommand {
     private User user;
     private CommandFlags delayedCommand;
+    // time-to-live не более 127
+    private byte TTL;
 
     public DelayedCommand(User user, CommandFlags delayedCommand) {
         this.delayedCommand = delayedCommand;

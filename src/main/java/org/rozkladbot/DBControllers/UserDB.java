@@ -2,7 +2,7 @@ package org.rozkladbot.DBControllers;
 
 import org.json.simple.parser.ParseException;
 import org.rozkladbot.entities.User;
-import org.rozkladbot.utils.FileUtils;
+import org.rozkladbot.utils.UserUtils;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class UserDB {
     }
     public static void updateUsersFromFile() {
         try {
-            users = FileUtils.deserializeUsers();
+            users = UserUtils.deserializeUsers();
         } catch (IOException exception) {
             System.out.println("Помилка під час виконання.");
             exception.printStackTrace();

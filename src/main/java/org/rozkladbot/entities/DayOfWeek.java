@@ -1,7 +1,7 @@
 package org.rozkladbot.entities;
 
 import org.rozkladbot.constants.EmojiList;
-import org.rozkladbot.utils.DateUtils;
+import org.rozkladbot.utils.date.DateUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

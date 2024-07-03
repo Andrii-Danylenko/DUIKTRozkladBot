@@ -2,6 +2,7 @@ package org.rozkladbot.web;
 
 import org.rozkladbot.dao.DAOImpl;
 import org.rozkladbot.handlers.ResponseHandler;
+import org.rozkladbot.utils.ConsoleLineLogger;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,18 +24,22 @@ import java.util.concurrent.Callable;
 @Component("Requester")
 public class Requester {
     private final static RequestBuilder requestBuilder = new RequestBuilder();
+    private final static ConsoleLineLogger<Requester> log = new ConsoleLineLogger<>(Requester.class);
 
     public static String makeRequest(String baseUrl, HashMap<String, String> params) throws IOException {
+        log.info("Починаю створення запиту...");
         URL url = new URL(baseUrl + requestBuilder.getParameters(params));
-        System.out.println(url);
+        log.info("Створене посилання для запиту: %s".formatted(url));
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(5000);
         connection.setRequestMethod("GET");
+        log.info("Відкриваю з'єднання з сервером API...");
         return readRequest(connection);
     }
     private static String readRequest(HttpsURLConnection connection) throws IOException {
+        log.info("Починаю зчитування відповіді сервера API...");
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(connection.getInputStream()));
         String inputLine;
@@ -44,6 +49,7 @@ public class Requester {
         }
         in.close();
         connection.disconnect();
+        log.success("Успішно зчитав дані з сервера!");
         return content.toString();
     }
 
