@@ -3,7 +3,7 @@ package org.rozkladbot.handlers;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.utils.MessageSender;
-import org.rozkladbot.utils.UserUtils;
+import org.rozkladbot.utils.data.UserUtils;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.utils.schedule.ScheduleDumper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ public class AdminCommands {
                     scheduleDumper.dumpSchedule(true);
                     System.out.println("Закінчив синхронізацію розкладів...");
                     System.out.println("Починаю синхронізацію користувачів...");
-                    userUtils.serializeUsers();
+                    userUtils.serialize();
                     System.out.println("Закінчив синхронізацію користувачів...");
                     System.out.println("Усі дані оновлено успішно!");
                     return;
@@ -73,7 +73,7 @@ public class AdminCommands {
                 }
                 case "-u" -> {
                     System.out.println("Починаю синхронізацію користувачів...");
-                    userUtils.serializeUsers();
+                    userUtils.serialize();
                     System.out.println("Закінчив синхронізацію користувачів...");
                 }
             }

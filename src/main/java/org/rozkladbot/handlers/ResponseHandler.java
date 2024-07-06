@@ -14,6 +14,7 @@ import org.rozkladbot.factories.KeyBoardFactory;
 import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -28,12 +29,15 @@ import static org.rozkladbot.constants.UserState.*;
 @Component("ResponseHandler")
 public class ResponseHandler {
     private static final ConsoleLineLogger<ResponseHandler> log = new ConsoleLineLogger<>(ResponseHandler.class);
-    private final MessageSender messageSender;
+    private MessageSender messageSender;
 
+    @Autowired
     public ResponseHandler(MessageSender messageSender) {
         this.messageSender = messageSender;
     }
+    public ResponseHandler() {
 
+    }
     public synchronized void replyToStart(Update update, long chatId) {
         try {
             String welcomeMessage = "";

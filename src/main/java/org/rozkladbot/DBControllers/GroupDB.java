@@ -3,7 +3,8 @@ package org.rozkladbot.DBControllers;
 import org.json.simple.parser.ParseException;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.utils.ConsoleLineLogger;
-import org.rozkladbot.utils.UserUtils;
+import org.rozkladbot.utils.data.AbstractJsonDeserializer;
+import org.rozkladbot.utils.data.GroupUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GroupDB {
     private static ConcurrentHashMap<String, Group> groups;
     private static final ConsoleLineLogger<GroupDB> log = new ConsoleLineLogger<>(GroupDB.class);
+    private static final AbstractJsonDeserializer<String, Group> groupDeserializer = new GroupUtils();
     public GroupDB() {
 
     }
@@ -29,7 +31,9 @@ public class GroupDB {
 
     private static void parseFile() {
         try {
-            groups = new ConcurrentHashMap<>(UserUtils.deserializeGroups());
+            groups = new ConcurrentHashMap<>(groupDeserializer.deserialize(
+                    "groups", "groupsList.json", "groups",
+                    "institute", "group", "faculty", "groupNumber", "course"));
         } catch (IOException | ParseException exception) {
             try {
                 log.info("Здається, що списку груп немає...Спробую створити.");

@@ -2,7 +2,8 @@ package org.rozkladbot.DBControllers;
 
 import org.json.simple.parser.ParseException;
 import org.rozkladbot.entities.User;
-import org.rozkladbot.utils.UserUtils;
+import org.rozkladbot.utils.data.AbstractJsonDeserializer;
+import org.rozkladbot.utils.data.UserUtils;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository("UserDB")
 public class UserDB {
     private static volatile Map<Long, User> users = new ConcurrentHashMap<>();
-
+    private static final AbstractJsonDeserializer<Long, User> userDeserializer = new UserUtils();
     public UserDB() {
 
     }
@@ -44,7 +45,15 @@ public class UserDB {
     }
     public static void updateUsersFromFile() {
         try {
-            users = UserUtils.deserializeUsers();
+            users = userDeserializer.deserialize("users",
+                    "usersList.json","users",
+                    "chatId",
+                    "group",
+                    "lastPinnedMessage",
+                    "role",
+                    "state",
+                    "areInBroadcastGroup",
+                    "lastSentMessage");
         } catch (IOException exception) {
             System.out.println("Помилка під час виконання.");
             exception.printStackTrace();
