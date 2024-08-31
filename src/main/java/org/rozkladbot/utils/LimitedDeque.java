@@ -3,6 +3,7 @@ package org.rozkladbot.utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
+import java.util.NoSuchElementException;
 
 public class LimitedDeque<T> extends ArrayDeque<T> {
     private final int maxSize;
@@ -47,8 +48,18 @@ public class LimitedDeque<T> extends ArrayDeque<T> {
     }
     @Override
     public String toString() {
-        String first = getFirst().toString() == null ? "null" : getFirst().toString();
-        String last = getLast().toString() == null ? "null" : getFirst().toString();
+        String first;
+        String last;
+        try {
+            first = getFirst().toString();
+        } catch (NoSuchElementException exception) {
+            first = "";
+        }
+        try {
+            last = getLast().toString();
+        } catch (NoSuchElementException exception) {
+            last = "";
+        }
         return "First: %s \nLast: %s".formatted(first, last);
     }
 }

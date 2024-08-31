@@ -2,6 +2,7 @@ package org.rozkladbot.handlers;
 
 import org.rozkladbot.entities.User;
 import org.rozkladbot.DBControllers.GroupDB;
+import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.data.UserUtils;
 import org.rozkladbot.DBControllers.UserDB;
@@ -9,7 +10,9 @@ import org.rozkladbot.utils.schedule.ScheduleDumper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,8 +21,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Component("AdminCommands")
 public class AdminCommands {
-    private static UserUtils userUtils = new UserUtils();
-    private static ScheduleDumper scheduleDumper = new ScheduleDumper();
+    private static final ConsoleLineLogger<AdminCommands> log = new ConsoleLineLogger<>(AdminCommands.class);
+    private static final UserUtils userUtils = new UserUtils();
+    private static final ScheduleDumper scheduleDumper = new ScheduleDumper();
     private static MessageSender messageSender;
     @Autowired
     public AdminCommands(MessageSender messageSender) {
@@ -32,6 +36,8 @@ public class AdminCommands {
                            /terminateSession - закриває сесію бота, попередньо оновлюючи всі офлайн-дані
                            /forceFetch - примусово оновити дані груп
                            /sendMessage [user_id(s) або -all]- відправити повідомлення вибраним користувачам
+                           /forstart - почати пересилання повідомлень
+                           /forstop - закінчити пересилання повідомлень
                            """;
     }
     public static void viewUsers(SilentSender sender, long chatId) {
@@ -57,24 +63,24 @@ public class AdminCommands {
         for (int i = 1; i < params.length; i++) {
             switch (params[i]) {
                 case "-all" -> {
-                    System.out.println("Починаю синхронізацію розкладів...");
+                    log.info("Починаю синхронізацію розкладів...");
                     scheduleDumper.dumpSchedule(true);
-                    System.out.println("Закінчив синхронізацію розкладів...");
-                    System.out.println("Починаю синхронізацію користувачів...");
+                    log.success("Закінчив синхронізацію розкладів...");
+                    log.info("Починаю синхронізацію користувачів...");
                     userUtils.serialize();
-                    System.out.println("Закінчив синхронізацію користувачів...");
-                    System.out.println("Усі дані оновлено успішно!");
+                    log.success("Закінчив синхронізацію користувачів...");
+                    log.success("Усі дані оновлено успішно!");
                     return;
                 }
                 case "-s" -> {
-                    System.out.println("Починаю синхронізацію розкладів...");
+                    log.info("Починаю синхронізацію розкладів...");
                     scheduleDumper.dumpSchedule(true);
-                    System.out.println("Закінчив синхронізацію розкладів...");
+                    log.success("Закінчив синхронізацію розкладів...");
                 }
                 case "-u" -> {
-                    System.out.println("Починаю синхронізацію користувачів...");
+                    log.info("Починаю синхронізацію користувачів...");
                     userUtils.serialize();
-                    System.out.println("Закінчив синхронізацію користувачів...");
+                    log.success("Закінчив синхронізацію користувачів...");
                 }
             }
         }
@@ -96,14 +102,13 @@ public class AdminCommands {
                 parts.add(matcher.group());
             }
         }
-        System.out.println(parts);
         return parts.get(parts.size() - 1);
     }
     public static void terminateSession() {
         try {
             synchronize("-all");
         } catch (IOException exception) {
-            System.out.println("Не вдалося синхронізувати офлайн файли.");
+            log.error("Не вдалося синхронізувати офлайн файли.");
             exception.printStackTrace();
         }
         finally {

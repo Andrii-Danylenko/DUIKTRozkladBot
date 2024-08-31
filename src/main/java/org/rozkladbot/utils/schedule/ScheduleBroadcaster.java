@@ -1,9 +1,7 @@
 package org.rozkladbot.utils.schedule;
 
-import org.checkerframework.checker.units.qual.A;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.entities.User;
-import org.rozkladbot.handlers.ResponseHandler;
 import org.rozkladbot.handlers.UserCommands;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
@@ -12,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,18 +18,21 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Component("Broadcaster")
 public class ScheduleBroadcaster {
     private static final Logger log = LoggerFactory.getLogger(ScheduleBroadcaster.class);
-    private MessageSender messageSender;
+    private final MessageSender messageSender;
 
     @Autowired
     public ScheduleBroadcaster(MessageSender messageSender) {
         this.messageSender = messageSender;
     }
+
     @Scheduled(cron = "0 0 19 * * *", zone = "Europe/Kiev")
     public void broadcastAndPinTomorrowSchedule() {
         System.out.printf("Час на сервері: %s%nЧас у Києві: %s%n",
@@ -64,15 +64,15 @@ public class ScheduleBroadcaster {
         sendMessage.setChatId(chatId);
         sendMessage.enableHtml(true);
         sendMessage.setParseMode("html");
-        sendMessage.setText(UserCommands.getTomorrowSchedule(user));
-        Optional<Message> message = messageSender.getSilentSender().execute(sendMessage);
-        if (message.isPresent()) {
+        try {
+            sendMessage.setText(UserCommands.getTomorrowSchedule(user));
+            Optional<Message> message = messageSender.getSilentSender().execute(sendMessage);
             log.info("Розпочато закріплення повідомлення користувача з id {}", chatId);
-            PinChatMessage pinMessage = new PinChatMessage(chatId.toString(), message.get().getMessageId());
+            PinChatMessage pinMessage = new PinChatMessage(chatId.toString(), message.orElseThrow(Exception::new).getMessageId());
             messageSender.getSilentSender().execute(pinMessage);
             user.setLastPinnedMessageId(message.get().getMessageId());
             log.info("Успішно завершено закріплення повідомлення користувача з id {}", chatId);
-        } else {
+        } catch (Exception exception) {
             sendMessage.setText("Не вдалося отримати розклад під час широкомовної розсилки :(");
         }
     }

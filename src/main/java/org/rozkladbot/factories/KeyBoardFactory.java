@@ -107,6 +107,7 @@ public final class KeyBoardFactory {
         }};
         return new InlineKeyboardMarkup(rows);
     }
+
     public static InlineKeyboardMarkup getBackButton() {
         return new InlineKeyboardMarkup(new ArrayList<>() {{
             add(getBackButtonAsList());
@@ -115,24 +116,27 @@ public final class KeyBoardFactory {
 
     private static List<InlineKeyboardButton> getBackButtonAsList() {
         return new ArrayList<>() {{
-                InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-                inlineKeyboardButton.setText("Назад");
-                inlineKeyboardButton.setCallbackData("НАЗАД");
-                add(inlineKeyboardButton);
-            }};
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+            inlineKeyboardButton.setText("Назад");
+            inlineKeyboardButton.setCallbackData("НАЗАД");
+            add(inlineKeyboardButton);
+        }};
     }
+
     public static InlineKeyboardMarkup getGroupsKeyboardInline(User currentUser) {
         List<String> groups = GroupDB.getGroups().values().stream().filter(group -> group.getCourse().equals(currentUser.getLastMessages().getLast()) && group.getInstitute().equals(currentUser.getLastMessages().getFirst())).map(Group::getGroupName).sorted().toList();
         List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(groups, 4);
-        buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого інститута?"));
+        buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твоєї групи??"));
         return new InlineKeyboardMarkup(buttons);
     }
+
     public static InlineKeyboardMarkup getInstitutesKeyboardInline() {
         Set<String> institutes = GroupDB.getGroups().values().stream().map(Group::getInstitute).collect(Collectors.toSet());
         List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(institutes, 1);
         buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого інститута?"));
         return new InlineKeyboardMarkup(buttons);
     }
+
     public static InlineKeyboardMarkup getCourseKeyBoard(User currentUser) {
         Set<String> courses = GroupDB.getGroups().values().stream()
                 .filter(x -> x.getInstitute().equalsIgnoreCase(currentUser.getLastMessages().getLast()))
@@ -150,6 +154,7 @@ public final class KeyBoardFactory {
             add(inlineKeyboardButton);
         }};
     }
+
     private static List<List<InlineKeyboardButton>> buildKeyBoardFromData(Collection<String> collection, int separator) {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
         List<InlineKeyboardButton> keyboardRow = new ArrayList<>();

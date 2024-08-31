@@ -6,6 +6,7 @@ import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.constants.UserRole;
 import org.rozkladbot.constants.UserState;
+import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.Serializer;
 import org.rozkladbot.utils.ConsoleLineLogger;
@@ -76,7 +77,13 @@ public class UserUtils extends AbstractJsonDeserializer<Long, User> implements S
     protected void getObjectAndApply(JSONObject jsonObject, String key, User entity) {
         switch (key) {
             case "chatId" -> entity.setChatID(Long.parseLong((String) jsonObject.get("chatId")));
-            case "group" -> entity.setGroup(GroupDB.getGroups().get((String) jsonObject.get("group")));
+            case "group" -> {
+                Group group = GroupDB.getGroups().get((String) jsonObject.get("group"));
+                if (group == null) {
+                    entity.setGroup(GroupDB.getGroups().get("ІСД-11"));
+                }
+                else entity.setGroup(group);
+            }
             case "lastPinnedMessage" -> {
                 String lastPinnedMessageStr = (String) jsonObject.get("lastPinnedMessage");
                 Integer lastPinnedMessage = lastPinnedMessageStr.equalsIgnoreCase("null") ? null : Integer.parseInt((String) jsonObject.get("lastPinnedMessage"));
@@ -86,6 +93,7 @@ public class UserUtils extends AbstractJsonDeserializer<Long, User> implements S
             case "state" -> entity.setState(UserState.getUserStateFromString((String) jsonObject.get("state")));
             case "areInBroadcastGroup" -> entity.setAreInBroadcastGroup((Boolean) jsonObject.get("areInBroadcastGroup"));
             case "lastSentMessage" -> entity.setLastSentMessage((long) jsonObject.get("lastSentMessage"));
+            case "userName" -> entity.setUserName(key);
         }
     }
 }

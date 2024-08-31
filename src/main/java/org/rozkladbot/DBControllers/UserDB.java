@@ -27,7 +27,8 @@ public class UserDB {
                        "role": "%s",
                        "lastPinnedMessage": "%s",
                        "areInBroadcastGroup": %b,
-                       "lastSentMessage": %d
+                       "lastSentMessage": %d,
+                       "userName": "%s"
                    }"""
                 .formatted(
                            user.getChatID(),
@@ -36,7 +37,8 @@ public class UserDB {
                            user.getRole(),
                            user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),
                            user.isAreInBroadcastGroup(),
-                           user.getLastSentMessage());
+                           user.getLastSentMessage(),
+                           user.getUserName() == null ? "" : user.getUserName());
 
     }
 

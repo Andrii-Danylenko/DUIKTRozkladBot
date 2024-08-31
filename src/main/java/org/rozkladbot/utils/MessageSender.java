@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
@@ -40,12 +41,17 @@ public class MessageSender {
         sendMessage.enableHtml(true);
         Set<Long> presentIds = UserDB.getAllUsers().keySet();
         if (values.isEmpty()) return;
-        if (values.contains("-all")) {
+        if (values.toString().equals("-all")) {
             sendBroadcast(sendMessage, presentIds, message);
         } else {
             sendMulticast(sendMessage, presentIds, values, message);
         }
-
+    }
+    public void forwardMessage(User currentUser, ForwardMessage forwardMessage) {
+        UserDB.getAllUsers().keySet().forEach(user -> {
+            forwardMessage.setChatId(user);
+            sender.execute(forwardMessage);
+        });
     }
 
     private void sendMulticast(SendMessage sendMessage, Set<Long> presentIds, Set<Object> values, String message) {

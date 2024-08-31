@@ -1,5 +1,7 @@
 package org.rozkladbot.entities;
 
+import org.rozkladbot.DBControllers.GroupDB;
+
 public class Group {
     private String groupName;
     private String faculty = "1";
@@ -63,7 +65,9 @@ public class Group {
     public long getGroupNumber() {
         return groupNumber;
     }
-
+    public static String getGroupNumberAsString(String groupName) {
+        return String.valueOf(GroupDB.getGroups().get(groupName).groupNumber);
+    }
     public void setGroupNumber(long groupNumber) {
         this.groupNumber = groupNumber;
     }

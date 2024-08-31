@@ -51,7 +51,7 @@ public class ScheduleDumper {
                         DateUtils.toString(DateUtils.getStartOfWeek(DateUtils.getTodayDateString()).plusDays(14)), isForced);
                 alreadyDumpedGroups.add(groupNumber);
             } catch (IOException e) {
-                log.error("Виникла помилка під час спроби записати розклад у файл. Привід: %s".formatted(e.getCause()));
+                log.error("Виникла помилка під час спроби записати розклад у файл. Привід: %s".formatted(e.getMessage()));
             }
         });
     }

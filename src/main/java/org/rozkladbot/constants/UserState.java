@@ -18,7 +18,8 @@ public enum UserState {
     GROUP_CHANGE,
     NULL_GROUP,
     ADMIN_SEND_MESSAGE,
-    IDLE;
+    IDLE,
+    AWAITING_FORWARD_MESSAGE;
     public static UserState getUserStateFromString(String state) {
         return UserState.valueOf(state);
     }
