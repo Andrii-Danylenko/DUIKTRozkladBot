@@ -10,6 +10,7 @@ import org.rozkladbot.entities.DayOfWeek;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
+import org.rozkladbot.exceptions.InvalidDataException;
 import org.rozkladbot.factories.KeyBoardFactory;
 import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.MessageSender;
@@ -21,6 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -73,16 +75,21 @@ public class ResponseHandler {
             String messageText = "";
             lock.unlock();
             if (update.hasCallbackQuery()) {
+                if (currentUser.getUserName().isEmpty()) {
+                    currentUser.setUserName(update.getCallbackQuery().getMessage().getChat().getUserName());
+                }
                 String callbackQueryText = update.getCallbackQuery().getData();
                 currentUser.setLastSentMessage(update.getCallbackQuery().getMessage().getMessageId() - 1);
                 handleCallbackQuery(update, currentUser, chatId, callbackQueryText);
             } else if (update.hasMessage()) {
+                if (currentUser.getUserName().isEmpty() && currentUser.getGroup() != null) {
+                    currentUser.setUserName(update.getMessage().getChat().getUserName());
+                }
                 messageText = update.getMessage().getText();
                 currentUser.setLastSentMessage(update.getMessage().getMessageId());
-                currentUser.getLastMessages().addLast(messageText);
                 handleMessage(update, currentUser, chatId, messageText);
+                System.out.println(currentUser.getLastMessages());
             }
-
             try {
                 handleState(update, currentUser, chatId);
             } catch (Exception exception) {
@@ -149,9 +156,9 @@ public class ResponseHandler {
             } else if (currentUser.getState() == AWAITING_INSTITUTE) {
                 switch (callbackQueryText) {
                     case "Інститут Інформаційних технологій",
-                            "Інститут Телекомунікацій",
-                            "Навчально-науковий інститут захисту інформації",
-                            "інститут менеджменту та підприємництва" -> {
+                         "Інститут Телекомунікацій",
+                         "Інститут захисту інформації",
+                         "Інститут менеджменту та підприєм." -> {
                         currentUser.setState(AWAITING_COURSE);
                         currentUser.getLastMessages().addLast(callbackQueryText);
                     }
@@ -171,13 +178,13 @@ public class ResponseHandler {
             messageSender.setMsgIdIfLimitIsPassed(currentUser, update);
         }
         if (currentUser.getState() == AWAITING_INPUT) {
-            handleAwaitingInput(update, currentUser, chatId, messageText);
+            handleAwaitingInput(currentUser, chatId, messageText);
         } else {
             handleOtherMessages(update, currentUser, chatId, messageText);
         }
     }
 
-    private void handleAwaitingInput(Update update, User currentUser, Long chatId, String messageText) {
+    private void handleAwaitingInput(User currentUser, Long chatId, String messageText) {
         if ("Так".equalsIgnoreCase(messageText)) {
             finishRegistration(currentUser, chatId);
         } else if ("Ні".equalsIgnoreCase(messageText)) {
@@ -200,6 +207,10 @@ public class ResponseHandler {
             currentUser.setState(AWAITING_NEXT_DAY_SCHEDULE);
         } else if ("/custom".equalsIgnoreCase(messageText) || "/custom@rozkad_bot".equalsIgnoreCase(messageText)) {
             currentUser.setState(AWAITING_CUSTOM_SCHEDULE_INPUT);
+        } else if ("/forStart".equalsIgnoreCase(messageText)) {
+            currentUser.setState(AWAITING_FORWARD_MESSAGE);
+        } else if ("/forStop".equalsIgnoreCase(messageText)) {
+            currentUser.setState(IDLE);
         }
         handleAdminCommands(update, currentUser, chatId, messageText);
     }
@@ -321,9 +332,9 @@ public class ResponseHandler {
                 log.error(("Помилка під час спроби завантажити розклад на завтра для користувача {%s}." +
                         "Підстава: %s").formatted(chatId, exception.getCause()));
                 messageSender.sendMessage(currentUser, """
-                        Щось пішло не так :(
-                        Спробуйте пізніше.
-                        """, KeyBoardFactory.getBackButton(), override);
+                        Виникла помилка під час отримання розкладу.
+                        Спробуйте пізніше. 🥺
+                        """, KeyBoardFactory.getBackButton(), true);
             } finally {
                 currentUser.setState(UserState.IDLE);
             }
@@ -338,8 +349,8 @@ public class ResponseHandler {
                 Для того, щоб отримати власні дані,
                 Використовуйте синтаксис:
                 <b>[група]</b> з <b>[дата початку]</b> по <b>[дата кінця]</b>
-                Наприклад: <b>ІСД-22</b> з <b>19.04.2024</b> по <b>29.04.2024</b>
-                """, KeyBoardFactory.getBackButton(), override);
+                Наприклад: <b>%s</b> з <b>%s</b> по <b>%s</b>
+                """.formatted(currentUser.getGroup().getGroupName(), DateUtils.getTodayDateString(), DateUtils.toString(DateUtils.addDays(DateUtils.getTodayDate(), 7))), KeyBoardFactory.getBackButton(), override);
         currentUser.setState(AWAITING_CUSTOM_SCHEDULE);
 
     }
@@ -353,7 +364,7 @@ public class ResponseHandler {
                     Розпочато спробу розпарсити ввід користувача з id {%d}.
                     Повідомлення для парсингу: {%s}""".formatted(chatId, update.getMessage().getText()));
             String[] data = update.getMessage().getText().split("\\sз\\s|\\sпо\\s");
-            if (data.length != 3) throw new Exception("Довжина масива менша за 3(%d)".formatted(data.length));
+            if (data.length != 3) throw new InvalidDataException("Довжина масива менша за 3(%d)".formatted(data.length));
             log.success("""
                     Успішно завершено спробу розпарсити ввід користувача з id {%d}
                     """.formatted(chatId));
@@ -361,7 +372,7 @@ public class ResponseHandler {
                     Розпочато спробу отримати розклад для користувача з id {%d}.
                     Дата для отримання: з {%s} по {%s}""".formatted(chatId, data[1], data[2]));
             Table response = DAOImpl.getInstance()
-                    .getCustomTable(currentUser, data[1],
+                    .getCustomTable(currentUser, data[0], data[1],
                             DateUtils.toString(DateUtils.parseDate(data[2]).plusDays(1)));
             log.success("""
                     Успішно завершено спробу отримати розклад для користувача з id {%d}.
@@ -391,13 +402,17 @@ public class ResponseHandler {
             log.success("""
                     Успішно завершено спробу отримати дані для отримання розкладу за власними параметрами
                     для користувача з id {%d}""".formatted(chatId));
-        } catch (Exception exception) {
+        } catch (RuntimeException exception) {
             log.error("""
                     Помилка під час спроби розпарсити ввід користувача з id {%d}.
                     Повідомлення для парсингу: {%s}.
                     Повідомлення помилки: {%s}""".formatted(chatId, update.getMessage(), exception.getMessage()));
             messageSender.sendMessage(currentUser, "Дані не є коректними! Спробуйте ще раз.", KeyBoardFactory.getBackButton(), override);
             currentUser.setState(AWAITING_CUSTOM_SCHEDULE);
+        } catch (InterruptedException | ExecutionException exception) {
+            messageSender.sendMessage(currentUser, "Виникла помилка під час отримання розкладу.\nСпробуйте пізніше. %s".formatted(EmojiList.DISAPPOINTMENT),
+                    KeyBoardFactory.getBackButton(), override);
+            currentUser.setState(IDLE);
         }
     }
 
@@ -413,7 +428,7 @@ public class ResponseHandler {
             log.success("""
                     Успішно закінчено отримання даних користувача {%d}""".formatted(chatId));
         } catch (NullPointerException exception) {
-            System.out.println("Null pointer");
+            log.error("NullPointer в методі getSettings");
         }
     }
 

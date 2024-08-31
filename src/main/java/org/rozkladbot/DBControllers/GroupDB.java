@@ -27,6 +27,7 @@ public class GroupDB {
     @Scheduled(cron = "0 0 6 * * *", zone = "Europe/Kiev")
     public static void fetchGroups() {
         parseFile();
+        System.out.println(groups);
     }
 
     private static void parseFile() {

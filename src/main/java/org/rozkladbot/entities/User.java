@@ -11,6 +11,8 @@ import java.util.HashMap;
 
 @Component
 public class User implements Serializable {
+
+    private String userName = "";
     private long chatID;
     private Group group;
     private UserState state;
@@ -23,7 +25,7 @@ public class User implements Serializable {
     public User(long chatID) {
         this.chatID = chatID;
     }
-    public User(long chatID, Group group, UserState userState, UserRole userRole, Integer lastPinnedMessageId, boolean areInBroadcastGroup, long lastSentMessage) {
+    public User(long chatID, Group group, UserState userState, UserRole userRole, Integer lastPinnedMessageId, boolean areInBroadcastGroup, long lastSentMessage, String userName) {
         this.chatID = chatID;
         this.group = group;
         this.state = userState;
@@ -31,6 +33,7 @@ public class User implements Serializable {
         this.lastPinnedMessageId = lastPinnedMessageId;
         this.areInBroadcastGroup = areInBroadcastGroup;
         this.lastSentMessage = lastSentMessage;
+        this.userName = userName;
     }
 
     public User(long chatID, UserState userState) {
@@ -69,6 +72,14 @@ public class User implements Serializable {
     public Group getGroup() {
         return group;
     }
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
 
     public void setGroup(Group group) {
         this.group = group;
@@ -89,13 +100,16 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return """
+                Назва чату: %s
                 Id-чату: %d
                 Група: %s
                 Курс: %s
                 Роль: %s
-                """.formatted(chatID, group.getGroupName(), group.getCourse(), role);
+                """.formatted(userName == null ? "" : userName,
+                chatID,
+                group == null ? "null" : group.getGroupName(),
+                group == null ? "null" : group.getCourse(), role);
     }
-
     public UserRole getRole() {
         return role;
     }

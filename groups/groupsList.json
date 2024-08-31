@@ -2,199 +2,731 @@
   "groups": [
     {
       "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-22",
-      "faculty": "1",
-      "groupNumber": 1634,
-      "course": "2"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
       "group": "ТЦР-11",
       "faculty": "1",
-      "groupNumber": 831,
+      "groupNumber": 1249,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ТЦР-12",
       "faculty": "1",
-      "groupNumber": 832,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ТЦР-13",
-      "faculty": "1",
-      "groupNumber": 833,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ТЦР-14",
-      "faculty": "1",
-      "groupNumber": 1214,
+      "groupNumber": 1386,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ШІД-11",
       "faculty": "1",
-      "groupNumber": 820,
+      "groupNumber": 1246,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ШІД-12",
       "faculty": "1",
-      "groupNumber": 818,
+      "groupNumber": 1359,
       "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ШІД-13",
-      "faculty": "1",
-      "groupNumber": 827,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-11",
-      "faculty": "1",
-      "groupNumber": 1228,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-12",
-      "faculty": "1",
-      "groupNumber": 888,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-13",
-      "faculty": "1",
-      "groupNumber": 1229,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-14",
-      "faculty": "1",
-      "groupNumber": 1215,
-      "course": "1"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-21",
-      "faculty": "1",
-      "groupNumber": 1638,
-      "course": "2"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-31",
-      "faculty": "1",
-      "groupNumber": 1320,
-      "course": "3"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-32",
-      "faculty": "1",
-      "groupNumber": 1397,
-      "course": "3"
-    },
-    {
-      "institute": "Інститут Інформаційних технологій",
-      "group": "ІСД-33",
-      "faculty": "1",
-      "groupNumber": 1554,
-      "course": "3"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ПД-11",
       "faculty": "1",
-      "groupNumber": 823,
+      "groupNumber": 1247,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ПД-12",
       "faculty": "1",
-      "groupNumber": 824,
+      "groupNumber": 1248,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ПД-13",
       "faculty": "1",
-      "groupNumber": 825,
+      "groupNumber": 1370,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ПД-14",
       "faculty": "1",
-      "groupNumber": 1225,
+      "groupNumber": 1380,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-11",
+      "faculty": "1",
+      "groupNumber": 1258,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-13",
+      "faculty": "1",
+      "groupNumber": 1259,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "КІД-11",
       "faculty": "1",
-      "groupNumber": 896,
+      "groupNumber": 1263,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "КІД-12",
       "faculty": "1",
-      "groupNumber": 899,
+      "groupNumber": 1381,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "КНД-11",
       "faculty": "1",
-      "groupNumber": 836,
+      "groupNumber": 1250,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "КНД-12",
       "faculty": "1",
-      "groupNumber": 842,
+      "groupNumber": 1218,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "КНД-13",
       "faculty": "1",
-      "groupNumber": 845,
+      "groupNumber": 1364,
       "course": "1"
     },
     {
       "institute": "Інститут Інформаційних технологій",
-      "group": "КНД-14",
+      "group": "ТЦР-21",
+      "faculty": "1",
+      "groupNumber": 831,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-22",
+      "faculty": "1",
+      "groupNumber": 832,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-23",
+      "faculty": "1",
+      "groupNumber": 833,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-24",
+      "faculty": "1",
+      "groupNumber": 1214,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-21",
+      "faculty": "1",
+      "groupNumber": 820,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-22",
+      "faculty": "1",
+      "groupNumber": 818,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-23",
+      "faculty": "1",
+      "groupNumber": 827,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-21",
+      "faculty": "1",
+      "groupNumber": 1228,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-22",
+      "faculty": "1",
+      "groupNumber": 888,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-23",
+      "faculty": "1",
+      "groupNumber": 1229,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-24",
+      "faculty": "1",
+      "groupNumber": 1215,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-24",
+      "faculty": "1",
+      "groupNumber": 1215,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-21",
+      "faculty": "1",
+      "groupNumber": 823,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-22",
+      "faculty": "1",
+      "groupNumber": 824,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-23",
+      "faculty": "1",
+      "groupNumber": 825,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-24",
+      "faculty": "1",
+      "groupNumber": 1225,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-21",
+      "faculty": "1",
+      "groupNumber": 836,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-22",
+      "faculty": "1",
+      "groupNumber": 842,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-23",
+      "faculty": "1",
+      "groupNumber": 845,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-24",
       "faculty": "1",
       "groupNumber": 1169,
-      "course": "1"
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-21",
+      "faculty": "1",
+      "groupNumber": 896,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-22",
+      "faculty": "1",
+      "groupNumber": 899,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-31",
+      "faculty": "1",
+      "groupNumber": 1629,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-32",
+      "faculty": "1",
+      "groupNumber": 1641,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-33",
+      "faculty": "1",
+      "groupNumber": 1612,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ТЦР-34",
+      "faculty": "1",
+      "groupNumber": 1311,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-31",
+      "faculty": "1",
+      "groupNumber": 1573,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-32",
+      "faculty": "1",
+      "groupNumber": 1574,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-31",
+      "faculty": "1",
+      "groupNumber": 1638,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-32",
+      "faculty": "1",
+      "groupNumber": 1634,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-31",
+      "faculty": "1",
+      "groupNumber": 1575,
+      "course": "3"
     },
     {
       "institute": "Інститут Інформаційних технологій",
       "group": "ПД-32",
       "faculty": "1",
-      "groupNumber": 1266,
+      "groupNumber": 1576,
       "course": "3"
     },
     {
-      "institute": "Інститут Телекомунікацій",
-      "group": "САД-11",
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-33",
       "faculty": "1",
-      "groupNumber": 845,
+      "groupNumber": 1577,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-34",
+      "faculty": "1",
+      "groupNumber": 1578,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-31",
+      "faculty": "1",
+      "groupNumber": 1585,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-32",
+      "faculty": "1",
+      "groupNumber": 1586,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-31",
+      "faculty": "1",
+      "groupNumber": 1579,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-32",
+      "faculty": "1",
+      "groupNumber": 1580,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-33",
+      "faculty": "1",
+      "groupNumber": 1581,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-34",
+      "faculty": "1",
+      "groupNumber": 1513,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-41",
+      "faculty": "1",
+      "groupNumber": 1394,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ШІД-42",
+      "faculty": "1",
+      "groupNumber": 1549,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-41",
+      "faculty": "1",
+      "groupNumber": 1261,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-42",
+      "faculty": "1",
+      "groupNumber": 1266,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-43",
+      "faculty": "1",
+      "groupNumber": 1271,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ПД-44",
+      "faculty": "1",
+      "groupNumber": 1545,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-41",
+      "faculty": "1",
+      "groupNumber": 1320,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-42",
+      "faculty": "1",
+      "groupNumber": 1397,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "ІСД-43",
+      "faculty": "1",
+      "groupNumber": 1554,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-41",
+      "faculty": "1",
+      "groupNumber": 1398,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КІД-42",
+      "faculty": "1",
+      "groupNumber": 1402,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-41",
+      "faculty": "1",
+      "groupNumber": 1273,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-42",
+      "faculty": "1",
+      "groupNumber": 1289,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут Інформаційних технологій",
+      "group": "КНД-43",
+      "faculty": "1",
+      "groupNumber": 1551,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-11",
+      "faculty": "4",
+      "groupNumber": 1279,
       "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ДЗД-11",
+      "faculty": "4",
+      "groupNumber": 1278,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-11",
+      "faculty": "4",
+      "groupNumber": 1283,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-11",
+      "faculty": "4",
+      "groupNumber": 1280,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-12",
+      "faculty": "4",
+      "groupNumber": 1434,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-11",
+      "faculty": "4",
+      "groupNumber": 1281,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-12",
+      "faculty": "4",
+      "groupNumber": 1443,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ПТБ-11",
+      "faculty": "4",
+      "groupNumber": 1282,
+      "course": "1"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-21",
+      "faculty": "4",
+      "groupNumber": 990,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-22",
+      "faculty": "4",
+      "groupNumber": 1227,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ДЗД-21",
+      "faculty": "4",
+      "groupNumber": 989,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-21",
+      "faculty": "4",
+      "groupNumber": 986,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-22",
+      "faculty": "4",
+      "groupNumber": 1196,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-23",
+      "faculty": "4",
+      "groupNumber": 1226,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-21",
+      "faculty": "4",
+      "groupNumber": 1059,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-22",
+      "faculty": "4",
+      "groupNumber": 1090,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-21",
+      "faculty": "4",
+      "groupNumber": 1078,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-22",
+      "faculty": "4",
+      "groupNumber": 1079,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ПТБ-21",
+      "faculty": "4",
+      "groupNumber": 1094,
+      "course": "2"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-31",
+      "faculty": "4",
+      "groupNumber": 1605,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-32",
+      "faculty": "4",
+      "groupNumber": 1653,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ДЗД-31",
+      "faculty": "4",
+      "groupNumber": 1604,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-31",
+      "faculty": "4",
+      "groupNumber": 1597,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-31",
+      "faculty": "4",
+      "groupNumber": 1606,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-32",
+      "faculty": "4",
+      "groupNumber": 1212,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-31",
+      "faculty": "4",
+      "groupNumber": 1607,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-32",
+      "faculty": "4",
+      "groupNumber": 1652,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ПТБ-31",
+      "faculty": "4",
+      "groupNumber": 1608,
+      "course": "3"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "АЗД-41",
+      "faculty": "4",
+      "groupNumber": 1484,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ДЗД-41",
+      "faculty": "4",
+      "groupNumber": 1483,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ЕПД-41",
+      "faculty": "4",
+      "groupNumber": 1489,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МНД-41",
+      "faculty": "4",
+      "groupNumber": 1485,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-41",
+      "faculty": "4",
+      "groupNumber": 1487,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "МРД-42",
+      "faculty": "4",
+      "groupNumber": 1544,
+      "course": "4"
+    },
+    {
+      "institute": "Інститут менеджменту та підприєм.",
+      "group": "ПТБ-41",
+      "faculty": "4",
+      "groupNumber": 1488,
+      "course": "4"
     }
   ]
 }

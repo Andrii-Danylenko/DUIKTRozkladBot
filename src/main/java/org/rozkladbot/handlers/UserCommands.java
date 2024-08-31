@@ -6,6 +6,7 @@ import org.rozkladbot.dao.DAOImpl;
 import org.rozkladbot.entities.User;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public final class UserCommands {
     private static final DAOImpl dao = DAOImpl.getInstance();
@@ -20,20 +21,20 @@ public final class UserCommands {
                 /custom - розклад за своїми параметрами.
                 /settings - змінити налаштування.""";
     }
-    public static String getThisDaySchedule(User user) {
+    public static String getThisDaySchedule(User user) throws ExecutionException, InterruptedException {
         return dao.getTodayTable(user).toString();
     }
-    public static String getThisWeekSchedule(User user) {
+    public static String getThisWeekSchedule(User user) throws ExecutionException, InterruptedException {
         return dao.getWeeklyTable(user).toString();
     }
-    public static String getNextWeekSchedule(User user) {
+    public static String getNextWeekSchedule(User user) throws ExecutionException, InterruptedException {
         return dao.getNextWeekTable(user).toString();
     }
-    public static String getTomorrowSchedule(User user) {
+    public static String getTomorrowSchedule(User user) throws ExecutionException, InterruptedException {
         return dao.getTomorrowTable(user).toString();
     }
-    public static String getCustomSchedule(User user, String dateFrom, String dateTo) {
-        return dao.getCustomTable(user, dateFrom, dateTo).toString();
+    public static String getCustomSchedule(User user, String group, String dateFrom, String dateTo) throws ExecutionException, InterruptedException {
+        return dao.getCustomTable(user, group, dateFrom, dateTo).toString();
     }
     public static String getUserSettings(User user) {
         return """

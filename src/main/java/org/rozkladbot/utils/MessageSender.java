@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.sender.SilentSender;
+import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
@@ -25,8 +26,8 @@ import java.util.Set;
 
 @Component("MessageSender")
 public class MessageSender {
-    private AbilityBot abilityBot;
-    private SilentSender sender;
+    private final AbilityBot abilityBot;
+    private final SilentSender sender;
     private static final ConsoleLineLogger<MessageSender> log = new ConsoleLineLogger<>(MessageSender.class);
 
     @Autowired
@@ -35,7 +36,9 @@ public class MessageSender {
         this.abilityBot = abilityBot;
     }
     public void sendMessage(String params, String message) {
+        System.out.println(message);
         Set<Object> values = parseParams(params);
+        System.out.println(values);
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableHtml(true);
         Set<Long> presentIds = UserDB.getAllUsers().keySet();
@@ -45,22 +48,36 @@ public class MessageSender {
         } else {
             sendMulticast(sendMessage, presentIds, values, message);
         }
-
+    }
+    public void forwardMessage(User currentUser, ForwardMessage forwardMessage) {
+        UserDB.getAllUsers().keySet().forEach(user -> {
+            forwardMessage.setChatId(user);
+            sender.execute(forwardMessage);
+        });
     }
 
     private void sendMulticast(SendMessage sendMessage, Set<Long> presentIds, Set<Object> values, String message) {
         values.stream().filter(value -> value instanceof Long).filter(value -> presentIds.contains((Long) value)).forEach(send -> {
-            sendMessage.setText(message);
-            sendMessage.setChatId(Long.parseLong(send.toString()));
-            sender.execute(sendMessage);
+          long id = Long.parseLong(send.toString());
+          try {
+              sendMessage.setText(message);
+              sendMessage.setChatId(id);
+              sender.execute(sendMessage);
+          } catch (Exception e) {
+              log.error("Помилка відправлення користувача з id: %d".formatted(id));
+          }
         });
     }
 
     private void sendBroadcast(SendMessage sendMessage, Set<Long> presentIds, String message) {
-        presentIds.forEach(user -> {
-            sendMessage.setChatId(user);
+        presentIds.forEach(id -> {
+            try {
+            sendMessage.setChatId(id);
             sendMessage.setText(message);
             sender.execute(sendMessage);
+            } catch (Exception e) {
+                log.error("Помилка відправлення користувача з id: %d".formatted(id));
+            }
         });
     }
 
