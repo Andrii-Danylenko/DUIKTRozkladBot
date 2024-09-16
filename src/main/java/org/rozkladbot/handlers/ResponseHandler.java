@@ -17,6 +17,7 @@ import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.IOException;
@@ -72,23 +73,17 @@ public class ResponseHandler {
             ReentrantLock lock = new ReentrantLock();
             lock.lock();
             User currentUser = UserDB.getAllUsers().get(chatId);
-            String messageText = "";
+            String messageText;
             lock.unlock();
+            setUserName(update, currentUser);
             if (update.hasCallbackQuery()) {
-                if (currentUser.getUserName().isEmpty()) {
-                    currentUser.setUserName(update.getCallbackQuery().getMessage().getChat().getUserName());
-                }
                 String callbackQueryText = update.getCallbackQuery().getData();
                 currentUser.setLastSentMessage(update.getCallbackQuery().getMessage().getMessageId() - 1);
                 handleCallbackQuery(update, currentUser, chatId, callbackQueryText);
             } else if (update.hasMessage()) {
-                if (currentUser.getUserName().isEmpty() && currentUser.getGroup() != null) {
-                    currentUser.setUserName(update.getMessage().getChat().getUserName());
-                }
                 messageText = update.getMessage().getText();
                 currentUser.setLastSentMessage(update.getMessage().getMessageId());
                 handleMessage(update, currentUser, chatId, messageText);
-                System.out.println(currentUser.getLastMessages());
             }
             try {
                 handleState(update, currentUser, chatId);
@@ -229,7 +224,10 @@ public class ResponseHandler {
         if (currentUser.getState() != null && currentUser.getRole() == UserRole.ADMIN) {
             if (messageText.toLowerCase().startsWith("/sendmessage ")) {
                 currentUser.setState(ADMIN_SEND_MESSAGE);
-            } else if (messageText.toLowerCase().startsWith("/synchronize ")) {
+            } else if (messageText.toLowerCase().startsWith("/removeuser")) {
+
+            }
+            else if (messageText.toLowerCase().startsWith("/synchronize ")) {
                 try {
                     AdminCommands.synchronize(messageText.split("\\s"));
                 } catch (IOException exception) {
@@ -481,5 +479,26 @@ public class ResponseHandler {
                 """, null, true);
         log.info("Користувач {%d} закінчив діалог з ботом".formatted(chatId));
         UserDB.getAllUsers().remove(chatId);
+    }
+
+    private void setUserName(Update update, User currentUser) {
+        if (update.hasCallbackQuery()) {
+            if (currentUser.getUserName().isEmpty()) {
+                Message message = update.getCallbackQuery().getMessage();
+                if (message.getChat().isGroupChat() || message.getChat().isSuperGroupChat()) {
+                    currentUser.setUserName(message.getChat().getTitle());
+                } else {
+                    currentUser.setUserName("@" + message.getChat().getUserName());
+                }
+            }
+        }
+        else if (currentUser.getUserName().isEmpty()) {
+            Message message = update.getMessage();
+            if (message.getChat().isGroupChat() || message.getChat().isSuperGroupChat()) {
+                currentUser.setUserName(message.getChat().getTitle());
+            } else {
+                currentUser.setUserName("@" + message.getChat().getUserName());
+            }
+        }
     }
 }
