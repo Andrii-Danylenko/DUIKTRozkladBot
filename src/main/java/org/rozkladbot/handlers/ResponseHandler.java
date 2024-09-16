@@ -77,13 +77,20 @@ public class ResponseHandler {
             lock.unlock();
             setUserName(update, currentUser);
             if (update.hasCallbackQuery()) {
+                if (currentUser.getUserName().isEmpty()) {
+                    currentUser.setUserName(update.getCallbackQuery().getMessage().getChat().getUserName());
+                }
                 String callbackQueryText = update.getCallbackQuery().getData();
                 currentUser.setLastSentMessage(update.getCallbackQuery().getMessage().getMessageId() - 1);
                 handleCallbackQuery(update, currentUser, chatId, callbackQueryText);
             } else if (update.hasMessage()) {
+                if (currentUser.getUserName().isEmpty() && currentUser.getGroup() != null) {
+                    currentUser.setUserName(update.getMessage().getChat().getUserName());
+                }
                 messageText = update.getMessage().getText();
                 currentUser.setLastSentMessage(update.getMessage().getMessageId());
                 handleMessage(update, currentUser, chatId, messageText);
+                System.out.println(currentUser.getLastMessages());
             }
             try {
                 handleState(update, currentUser, chatId);

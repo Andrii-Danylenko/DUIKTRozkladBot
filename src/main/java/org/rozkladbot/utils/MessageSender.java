@@ -43,7 +43,7 @@ public class MessageSender {
         sendMessage.enableHtml(true);
         Set<Long> presentIds = UserDB.getAllUsers().keySet();
         if (values.isEmpty()) return;
-        if (values.contains("-all")) {
+        if (values.toString().equals("-all")) {
             sendBroadcast(sendMessage, presentIds, message);
         } else {
             sendMulticast(sendMessage, presentIds, values, message);
