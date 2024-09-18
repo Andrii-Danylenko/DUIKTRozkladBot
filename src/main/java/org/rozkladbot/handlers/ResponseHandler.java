@@ -3,15 +3,16 @@ package org.rozkladbot.handlers;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.constants.EmojiList;
-import org.rozkladbot.constants.UserRole;
+import org.rozkladbot.entities.UserRole;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.dao.DAOImpl;
 import org.rozkladbot.entities.DayOfWeek;
-import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.exceptions.InvalidDataException;
 import org.rozkladbot.factories.KeyBoardFactory;
+import org.rozkladbot.services.UserRoleService;
+import org.rozkladbot.services.UserService;
 import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
@@ -33,10 +34,14 @@ import static org.rozkladbot.constants.UserState.*;
 public class ResponseHandler {
     private static final ConsoleLineLogger<ResponseHandler> log = new ConsoleLineLogger<>(ResponseHandler.class);
     private MessageSender messageSender;
+    private UserService userService;
+    private UserRoleService userRoleService;
 
     @Autowired
-    public ResponseHandler(MessageSender messageSender) {
+    public ResponseHandler(MessageSender messageSender, UserService userService, UserRoleService userRoleService) {
         this.messageSender = messageSender;
+        this.userService = userService;
+        this.userRoleService = userRoleService;
     }
     public ResponseHandler() {
 
@@ -47,13 +52,14 @@ public class ResponseHandler {
             User user;
             if (!UserDB.getAllUsers().containsKey(chatId)) {
                 user = new User(chatId, NULL_GROUP);
-                user.setRole(UserRole.USER);
+                user.setRole(new UserRole("USER"));
                 UserDB.getAllUsers().put(chatId, user);
                 welcomeMessage = "Цей бот створений, щоб зручно проглядати розклад ДУІКТ.%n%s".formatted(UserCommands.getMenu());
                 user.setLastSentMessage(messageSender.getMessageId(update));
             } else {
-                user = UserDB.getAllUsers().get(chatId);
+                user = userService.findById(chatId);
                 user.setLastSentMessage(messageSender.getMessageId(update));
+                UserDB.getAllUsers().put(chatId, user);
             }
             log.info("Розпочато діалог з користувачем з id {%s}".formatted(chatId));
             messageSender.sendMessage(user, welcomeMessage, KeyBoardFactory.getCommandsList(), false);
@@ -144,7 +150,7 @@ public class ResponseHandler {
             if (currentUser.getState() == AWAITING_COURSE) {
                 Set<String> courses = GroupDB.getGroups().values().stream()
                         .filter(x -> x.getInstitute().equalsIgnoreCase(currentUser.getLastMessages().getLast()))
-                        .map(Group::getCourse).collect(Collectors.toSet());
+                        .map(group -> group.getCourse() + "").collect(Collectors.toSet());
                 if (courses.contains(callbackQueryText)) {
                     currentUser.setState(AWAITING_GROUP);
                     currentUser.getLastMessages().addLast(callbackQueryText);
@@ -228,7 +234,7 @@ public class ResponseHandler {
 
     private void handleAdminCommands(Update update, User currentUser, Long chatId, String messageText) {
         messageSender.setMsgIdIfLimitIsPassed(currentUser, update);
-        if (currentUser.getState() != null && currentUser.getRole() == UserRole.ADMIN) {
+        if (currentUser.getState() != null && currentUser.getRole().getRole() == UserRole.Roles.ADMIN) {
             if (messageText.toLowerCase().startsWith("/sendmessage ")) {
                 currentUser.setState(ADMIN_SEND_MESSAGE);
             } else if (messageText.toLowerCase().startsWith("/removeuser")) {
@@ -279,7 +285,7 @@ public class ResponseHandler {
             currentUser.setState(NULL_GROUP);
         }
         String menu = UserCommands.getMenu();
-        if (UserDB.getAllUsers().get(chatId).getRole() == UserRole.ADMIN) {
+        if (UserDB.getAllUsers().get(chatId).getRole().getRole() == UserRole.Roles.ADMIN) {
             menu += '\n' + AdminCommands.getAllCommands();
         }
         messageSender.sendMessage(currentUser, menu, KeyBoardFactory.getCommandsList(), override);
@@ -471,7 +477,7 @@ public class ResponseHandler {
     public void finishRegistration(User currentUser, long chatId) {
         log.info("""
                 Розпочато спробу завершити рєстрацію користувача з id {%d}""".formatted(chatId));
-        UserCommands.finishRegistration(currentUser);
+        finishRegistration(currentUser);
         messageSender.sendMessage(currentUser, currentUser.getGroup() == null ? "Ви були успішно зареєстровані!" : "Ви успішно змінили налаштування групи!", KeyBoardFactory.getBackButton(), true);
         currentUser.setState(MAIN_MENU);
         log.info("""
@@ -507,5 +513,14 @@ public class ResponseHandler {
                 currentUser.setUserName("@" + message.getChat().getUserName());
             }
         }
+    }
+    private void finishRegistration(User user) {
+        String group = user.getLastMessages().getLast().toUpperCase();
+        user.setGroup(GroupDB.getGroups().get(group));
+        user.setState(UserState.REGISTERED);
+        if (!userRoleService.create(user.getRole())) {
+            user.setRole(userRoleService.findByRoleName(user.getRole().getRole().name()));
+        }
+        System.out.println(userService.create(user));
     }
 }

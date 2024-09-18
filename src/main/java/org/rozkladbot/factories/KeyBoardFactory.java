@@ -124,7 +124,13 @@ public final class KeyBoardFactory {
     }
 
     public static InlineKeyboardMarkup getGroupsKeyboardInline(User currentUser) {
-        List<String> groups = GroupDB.getGroups().values().stream().filter(group -> group.getCourse().equals(currentUser.getLastMessages().getLast()) && group.getInstitute().equals(currentUser.getLastMessages().getFirst())).map(Group::getGroupName).sorted().toList();
+        List<String> groups = GroupDB.getGroups()
+                .values().stream()
+                .filter(group -> String.valueOf(
+                        group.getCourse()).equals(currentUser.getLastMessages().getLast())
+                                 && group.getInstitute().equals(currentUser.getLastMessages().getFirst()))
+                .map(Group::getGroupName).sorted()
+                .toList();
         List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(groups, 4);
         buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твоєї групи??"));
         return new InlineKeyboardMarkup(buttons);
@@ -140,7 +146,7 @@ public final class KeyBoardFactory {
     public static InlineKeyboardMarkup getCourseKeyBoard(User currentUser) {
         Set<String> courses = GroupDB.getGroups().values().stream()
                 .filter(x -> x.getInstitute().equalsIgnoreCase(currentUser.getLastMessages().getLast()))
-                .map(Group::getCourse).collect(Collectors.toSet());
+                .map(group -> group.getCourse() + "").collect(Collectors.toSet());
         List<List<InlineKeyboardButton>> buttons = buildKeyBoardFromData(courses, 1);
         buttons.add(getLinkButton("https://t.me/optionalOfNullable", "Немає твого курса?"));
         return new InlineKeyboardMarkup(buttons);

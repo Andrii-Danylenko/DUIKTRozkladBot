@@ -1,7 +1,7 @@
 package org.rozkladbot.DBControllers;
 
 import org.json.simple.parser.ParseException;
-import org.rozkladbot.constants.UserRole;
+import org.rozkladbot.entities.UserRole;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.utils.ConsoleLineLogger;
@@ -38,7 +38,7 @@ public class UserDB {
                            user.getChatID(),
                            user.getGroup() == null ? GroupDB.getGroups().get("ІСД-32") : user.getGroup() == null,
                            user.getState() == null ? UserState.IDLE : user.getState(),
-                           user.getRole() == null ? UserRole.USER : user.getRole(),
+                           user.getRole() == null ? new UserRole("USER") : user.getRole(),
                            user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),
                            user.isAreInBroadcastGroup(),
                            user.getLastSentMessage(),

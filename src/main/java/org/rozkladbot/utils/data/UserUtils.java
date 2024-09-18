@@ -4,7 +4,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.DBControllers.UserDB;
-import org.rozkladbot.constants.UserRole;
+import org.rozkladbot.entities.UserRole;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.User;
@@ -93,7 +93,7 @@ public class UserUtils extends AbstractJsonDeserializer<Long, User> implements S
                 Integer lastPinnedMessage = lastPinnedMessageStr.equalsIgnoreCase("null") ? null : Integer.parseInt((String) jsonObject.get(key));
                 entity.setLastPinnedMessageId(lastPinnedMessage);
             }
-            case "role" -> entity.setRole(UserRole.getUserRoleFromString((String) jsonObject.get(key)));
+            case "role" -> entity.setRole(new UserRole(((String) jsonObject.get(key))));
             case "state" -> entity.setState(UserState.getUserStateFromString((String) jsonObject.get(key)));
             case "areInBroadcastGroup" -> entity.setAreInBroadcastGroup((Boolean) jsonObject.get(key));
             case "lastSentMessage" -> entity.setLastSentMessage((long) jsonObject.get(key));

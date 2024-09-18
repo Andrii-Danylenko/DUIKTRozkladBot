@@ -1,25 +1,36 @@
 package org.rozkladbot.entities;
 
-import org.rozkladbot.constants.UserRole;
+import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.utils.LimitedDeque;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
-@Component
+@Entity
+@Table(name = "users")
 public class User implements Serializable {
-
-    private String userName = "";
+    @Id
     private long chatID;
+    @Column(name = "userName", unique = true, nullable = false)
+    private String userName = "";
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "group_id", nullable = false)
     private Group group;
+    @Enumerated(EnumType.STRING)
     private UserState state;
+    @Transient
     private ArrayDeque<String> lastMessages = new LimitedDeque<>(2);
+    @Column(name = "lastPinnedMessageId")
     private Integer lastPinnedMessageId;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "role_id", nullable = false)
     private UserRole role;
+    @Column(name = "areInBroadcastGroup", nullable = false)
     private boolean areInBroadcastGroup = true;
+    @Column(name = "lastSentMessage", nullable = false)
     private long lastSentMessage = 0;
 
     public User(long chatID) {
@@ -86,8 +97,8 @@ public class User implements Serializable {
     }
     public HashMap<String, String> getUserParams() {
         return new HashMap<>() {{
-            put("course", group.getCourse());
-            put("faculty", group.getFaculty());
+            put("course", group.getCourse() + "");
+            put("faculty", group.getFaculty() + "");
             put("group", group.getGroupNumber() + "");
         }};
     }
@@ -130,5 +141,19 @@ public class User implements Serializable {
     }
     public long getLastSentMessage() {
         return lastSentMessage;
+    }
+
+    public String toStringFull() {
+        return "User{" +
+               "chatID=" + chatID +
+               ", userName='" + userName + '\'' +
+               ", group=" + group +
+               ", state=" + state +
+               ", lastMessages=" + lastMessages +
+               ", lastPinnedMessageId=" + lastPinnedMessageId +
+               ", role=" + role +
+               ", areInBroadcastGroup=" + areInBroadcastGroup +
+               ", lastSentMessage=" + lastSentMessage +
+               '}';
     }
 }

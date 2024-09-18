@@ -1,31 +1,41 @@
 package org.rozkladbot.entities;
 
+import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import org.rozkladbot.DBControllers.GroupDB;
 
+@Entity
+@Table(name = "groups")
 public class Group {
-    private String groupName;
-    private String faculty = "1";
-    private String course;
-    private String institute;
+    @Id
+    @Column(name = "groupNumber")
     private long groupNumber;
+    @Column(name = "groupName", nullable = false, unique = true)
+    private String groupName;
+    @Column(name = "faculty", nullable = false)
+    private int faculty;
+    @Column(name = "course", nullable = false)
+    private int course;
+    @Column(name = "institute", nullable = false)
+    private String institute;
 
     public Group() {
 
     }
 
-    public Group(String institute, String groupName, String faculty, long groupNumber, String course) {
+    public Group(String institute, String groupName, int faculty, long groupNumber, int course) {
         this.groupName = groupName;
         this.course = course;
         this.institute = institute;
         this.groupNumber = groupNumber;
         this.faculty = faculty;
     }
-    public Group(String groupName, String course, String institute) {
+    public Group(String groupName, int course, String institute) {
         this.groupName = groupName;
         this.course = course;
         this.institute = institute;
     }
-    public Group(String groupName, String course, String faculty, String institute) {
+    public Group(String groupName, int course, int faculty, String institute) {
         this.groupName = groupName;
         this.course = course;
         this.institute = institute;
@@ -40,19 +50,19 @@ public class Group {
         this.groupName = groupName;
     }
 
-    public String getFaculty() {
+    public int getFaculty() {
         return faculty;
     }
 
-    public void setFaculty(String faculty) {
+    public void setFaculty(int faculty) {
         this.faculty = faculty;
     }
 
-    public String getCourse() {
+    public int getCourse() {
         return course;
     }
 
-    public void setCourse(String course) {
+    public void setCourse(int course) {
         this.course = course;
     }
 
@@ -71,5 +81,16 @@ public class Group {
     }
     public void setGroupNumber(long groupNumber) {
         this.groupNumber = groupNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Group{" +
+               "  groupNumber=" + groupNumber +
+               ", groupName='" + groupName + '\'' +
+               ", faculty='" + faculty + '\'' +
+               ", course='" + course + '\'' +
+               ", institute='" + institute + '\n' +
+               '}';
     }
 }

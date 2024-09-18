@@ -3,6 +3,8 @@ package org.rozkladbot.telegramservice;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.handlers.ResponseHandler;
 import org.rozkladbot.DBControllers.UserDB;
+import org.rozkladbot.services.UserRoleService;
+import org.rozkladbot.services.UserService;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +28,9 @@ import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 @Component("RozkladBot")
 public class RozkladBot extends AbilityBot {
     private final ResponseHandler responseHandler;
+
     @Autowired
-    public RozkladBot(Environment environment) {
+    public RozkladBot(Environment environment, UserService userService, UserRoleService userRoleService) {
         super(environment.getProperty("botApiKey"), environment.getProperty("bot.name"));
         GroupDB.fetchGroups();
         UserDB.updateUsersFromFile();
@@ -37,7 +40,7 @@ public class RozkladBot extends AbilityBot {
                           Сьогодні: %s
                           """, LocalDateTime.now(), DateUtils.timeOfNow(), DateUtils.getDayOfWeek(DateUtils.getTodayDateString()));
         UserDB.getAllUsers().values().forEach(System.out::println);
-        this.responseHandler = new ResponseHandler(new MessageSender(this, this.silent));
+        this.responseHandler = new ResponseHandler(new MessageSender(this, this.silent), userService, userRoleService);
     }
     @Bean
     public SilentSender silentSender() {
@@ -55,9 +58,7 @@ public class RozkladBot extends AbilityBot {
     }
 
     public Reply replyToButtons() {
-        BiConsumer<BaseAbilityBot, Update> action = (abilityBot, upd) -> {
-            responseHandler.replyToButtons(getChatId(upd), upd);
-        };
+        BiConsumer<BaseAbilityBot, Update> action = (abilityBot, upd) -> responseHandler.replyToButtons(getChatId(upd), upd);
         return Reply.of(action, upd -> {
             long chatId = getChatId(upd);
             return responseHandler.userIsActive(chatId) && (upd.hasMessage() || upd.hasCallbackQuery());

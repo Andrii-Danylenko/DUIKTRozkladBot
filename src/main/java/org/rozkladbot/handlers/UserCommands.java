@@ -1,11 +1,8 @@
 package org.rozkladbot.handlers;
 
-import org.rozkladbot.DBControllers.GroupDB;
-import org.rozkladbot.constants.UserState;
 import org.rozkladbot.dao.DAOImpl;
 import org.rozkladbot.entities.User;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public final class UserCommands {
@@ -46,10 +43,5 @@ public final class UserCommands {
                 user.getGroup().getGroupNumber(),
                 user.getGroup().getCourse(),
                 user.isAreInBroadcastGroup() ? "увімкнені" : "вимкнені");
-    }
-    public static void finishRegistration(User user) {
-        String group = user.getLastMessages().getLast().toUpperCase();
-        user.setGroup(GroupDB.getGroups().get(group));
-        user.setState(UserState.REGISTERED);
     }
 }

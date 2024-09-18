@@ -1,17 +1,16 @@
 package org.rozkladbot.dao;
 
-import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.DAO;
 import org.rozkladbot.utils.ConsoleLineLogger;
-import org.rozkladbot.utils.data.GroupUtils;
 import org.rozkladbot.utils.date.DateUtils;
 import org.rozkladbot.utils.schedule.ScheduleParser;
 import org.rozkladbot.web.Requester;
-import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +19,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.concurrent.*;
 
-@Repository("DAOImpl")
+@Component
 public class DAOImpl implements DAO {
     private final ScheduleParser parser = new ScheduleParser();
     private static final String baseUrl = "https://skedy.api.yacode.dev/v1/student/schedule?";
@@ -31,6 +30,7 @@ public class DAOImpl implements DAO {
 
     }
 
+    @Bean
     public static DAOImpl getInstance() {
         DAOImpl daoToReturn = dao;
         if (daoToReturn != null) {
@@ -43,16 +43,15 @@ public class DAOImpl implements DAO {
             return dao;
         }
     }
-
     @Override
     public Table getWeeklyTable(User user) throws ExecutionException, InterruptedException {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
             put("group", String.valueOf(user.getGroup().getGroupNumber()));
-            put("course", user.getGroup().getCourse());
+            put("course", user.getGroup().getCourse() + "");
             put("dateFrom", DateUtils.toString(startOfWeek));
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(6)));
-            put("faculty", user.getGroup().getFaculty());
+            put("faculty", user.getGroup().getFaculty() + "");
         }};
         return getTable(user, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
@@ -62,10 +61,10 @@ public class DAOImpl implements DAO {
         LocalDate startOfWeek = DateUtils.getStartOfWeek(DateUtils.getTodayDateString());
         HashMap<String, String> params = new HashMap<>() {{
             put("group", String.valueOf(user.getGroup().getGroupNumber()));
-            put("course", user.getGroup().getCourse());
+            put("course", user.getGroup().getCourse() + "");
             put("dateFrom", DateUtils.toString(startOfWeek.plusDays(7)));
             put("dateTo", DateUtils.toString(startOfWeek.plusDays(13)));
-            put("faculty", user.getGroup().getFaculty());
+            put("faculty", user.getGroup().getFaculty() + "");
         }};
         return getTable(user, params, UserState.AWAITING_NEXT_WEEK_SCHEDULE);
     }
@@ -74,10 +73,10 @@ public class DAOImpl implements DAO {
     public Table getTodayTable(User user) throws ExecutionException, InterruptedException {
         HashMap<String, String> params = new HashMap<>() {{
             put("group", String.valueOf(user.getGroup().getGroupNumber()));
-            put("course", user.getGroup().getCourse());
+            put("course", user.getGroup().getCourse() + "");
             put("dateFrom", DateUtils.getTodayDateString());
             put("dateTo", DateUtils.getTodayDateString());
-            put("faculty", user.getGroup().getFaculty());
+            put("faculty", user.getGroup().getFaculty() + "");
         }};
         return getTable(user, params, UserState.AWAITING_THIS_WEEK_SCHEDULE);
     }
@@ -86,10 +85,10 @@ public class DAOImpl implements DAO {
     public Table getTomorrowTable(User user) throws ExecutionException, InterruptedException {
         HashMap<String, String> params = new HashMap<>() {{
             put("group", String.valueOf(user.getGroup().getGroupNumber()));
-            put("course", user.getGroup().getCourse());
+            put("course", user.getGroup().getCourse() + "");
             put("dateFrom", DateUtils.toString(DateUtils.getTodayDate().plusDays(1)));
             put("dateTo", DateUtils.toString(DateUtils.getTodayDate().plusDays(1)));
-            put("faculty", user.getGroup().getFaculty());
+            put("faculty", user.getGroup().getFaculty() + "");
         }};
         return getTable(user, params, DateUtils.getDayOfWeek(DateUtils.getTodayDateString()).equalsIgnoreCase("Неділя")
                 ? UserState.AWAITING_NEXT_WEEK_SCHEDULE : UserState.AWAITING_THIS_WEEK_SCHEDULE);
@@ -105,8 +104,8 @@ public class DAOImpl implements DAO {
             put("group", Group.getGroupNumberAsString(group));
             put("dateFrom", dateFrom);
             put("dateTo", finalDateTo);
-            put("course", user.getGroup().getCourse());
-            put("faculty", user.getGroup().getFaculty());
+            put("course", user.getGroup().getCourse() + "");
+            put("faculty", user.getGroup().getFaculty() + "");
         }};
         return getTable(user, params, UserState.IDLE);
     }

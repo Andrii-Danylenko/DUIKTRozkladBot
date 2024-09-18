@@ -32,9 +32,9 @@ public class GroupUtils extends AbstractJsonDeserializer<String, Group> {
         switch (key) {
             case "institute" -> entity.setInstitute((String) jsonObject.get(key));
             case "group" -> entity.setGroupName((String) jsonObject.get(key));
-            case "faculty" -> entity.setFaculty((String) jsonObject.get(key));
+            case "faculty" -> entity.setFaculty(Integer.parseInt((String) jsonObject.get(key)));
             case "groupNumber" -> entity.setGroupNumber((long) jsonObject.get(key));
-            case "course" -> entity.setCourse((String) jsonObject.get(key));
+            case "course" -> entity.setCourse(Integer.parseInt((String) jsonObject.get(key)));
         }
     }
 }
