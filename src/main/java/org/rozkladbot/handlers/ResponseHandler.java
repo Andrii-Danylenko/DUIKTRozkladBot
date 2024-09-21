@@ -232,7 +232,8 @@ public class ResponseHandler {
             if (messageText.toLowerCase().startsWith("/sendmessage ")) {
                 currentUser.setState(ADMIN_SEND_MESSAGE);
             } else if (messageText.toLowerCase().startsWith("/removeuser")) {
-
+                removeUser(currentUser, messageText);
+                currentUser.setState(IDLE);
             }
             else if (messageText.toLowerCase().startsWith("/synchronize ")) {
                 try {
@@ -506,6 +507,19 @@ public class ResponseHandler {
             } else {
                 currentUser.setUserName("@" + message.getChat().getUserName());
             }
+        }
+    }
+
+    private void removeUser(User currentUser, String message) {
+        try {
+            log.info("Намагаюся видалити користувача...");
+            long userId = Long.parseLong(message.split(" ")[1]);
+            UserDB.removeUserById(userId);
+            String success = "Успішно видалив користувача з id %d".formatted(userId);
+            log.success(success);
+            messageSender.sendMessage(currentUser,  success, null, false);
+        } catch (Exception exception) {
+            log.error("Не вдалося видалити користувача. Привід: %s".formatted(exception.getCause().getMessage()));
         }
     }
 }

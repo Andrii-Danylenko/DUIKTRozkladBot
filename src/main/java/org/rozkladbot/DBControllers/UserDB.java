@@ -36,7 +36,7 @@ public class UserDB {
                    }"""
                 .formatted(
                            user.getChatID(),
-                           user.getGroup() == null ? GroupDB.getGroups().get("ІСД-32") : user.getGroup() == null,
+                           user.getGroup() == null ? GroupDB.getGroups().get("ІСД-32") : user.getGroup().getGroupName(),
                            user.getState() == null ? UserState.IDLE : user.getState(),
                            user.getRole() == null ? UserRole.USER : user.getRole(),
                            user.getLastPinnedMessageId() == null ? "null" : user.getLastPinnedMessageId(),
