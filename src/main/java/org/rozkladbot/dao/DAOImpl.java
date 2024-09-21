@@ -1,16 +1,15 @@
 package org.rozkladbot.dao;
 
-import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.interfaces.DAO;
 import org.rozkladbot.utils.ConsoleLineLogger;
-import org.rozkladbot.utils.data.GroupUtils;
 import org.rozkladbot.utils.date.DateUtils;
 import org.rozkladbot.utils.schedule.ScheduleParser;
 import org.rozkladbot.web.Requester;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.concurrent.*;
 
-@Repository("DAOImpl")
 public class DAOImpl implements DAO {
     private final ScheduleParser parser = new ScheduleParser();
     private static final String baseUrl = "https://skedy.api.yacode.dev/v1/student/schedule?";
@@ -31,6 +29,7 @@ public class DAOImpl implements DAO {
 
     }
 
+    @Bean
     public static DAOImpl getInstance() {
         DAOImpl daoToReturn = dao;
         if (daoToReturn != null) {
