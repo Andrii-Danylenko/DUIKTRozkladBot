@@ -3,6 +3,7 @@ package org.rozkladbot.telegramservice;
 import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.handlers.ResponseHandler;
 import org.rozkladbot.DBControllers.UserDB;
+import org.rozkladbot.utils.GroupMediaSender;
 import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class RozkladBot extends AbilityBot {
                           Сьогодні: %s
                           """, LocalDateTime.now(), DateUtils.timeOfNow(), DateUtils.getDayOfWeek(DateUtils.getTodayDateString()));
         UserDB.getAllUsers().values().forEach(System.out::println);
-        this.responseHandler = new ResponseHandler(new MessageSender(this, this.silent));
+        this.responseHandler = new ResponseHandler(new GroupMediaSender(this));
     }
     @Bean
     public SilentSender silentSender() {

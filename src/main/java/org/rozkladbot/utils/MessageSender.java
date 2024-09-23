@@ -3,41 +3,41 @@ package org.rozkladbot.utils;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.sender.SilentSender;
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
+import org.telegram.telegrambots.meta.api.methods.send.*;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaVideo;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component("MessageSender")
+@Primary
 public class MessageSender {
-    private final AbilityBot abilityBot;
-    private final SilentSender sender;
+    protected final AbilityBot abilityBot;
+    protected final SilentSender sender;
     private static final ConsoleLineLogger<MessageSender> log = new ConsoleLineLogger<>(MessageSender.class);
 
     @Autowired
-    public MessageSender(AbilityBot abilityBot, SilentSender sender) {
-        this.sender = sender;
+    public MessageSender(AbilityBot abilityBot) {
+        this.sender = abilityBot.silent();
         this.abilityBot = abilityBot;
     }
+
     public void sendMessage(String params, String message) {
         System.out.println(message);
-        Set<Object> values = parseParams(params);
+        Set<Long> values = parseParams(params);
         System.out.println(values);
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableHtml(true);
@@ -49,46 +49,38 @@ public class MessageSender {
             sendMulticast(sendMessage, presentIds, values, message);
         }
     }
-    public void forwardMessage(User currentUser, ForwardMessage forwardMessage) {
-        UserDB.getAllUsers().keySet().forEach(user -> {
-            forwardMessage.setChatId(user);
-            sender.execute(forwardMessage);
-        });
-    }
 
-    private void sendMulticast(SendMessage sendMessage, Set<Long> presentIds, Set<Object> values, String message) {
-        values.stream().filter(value -> value instanceof Long).filter(value -> presentIds.contains((Long) value)).forEach(send -> {
-          long id = Long.parseLong(send.toString());
-          try {
-              sendMessage.setText(message);
-              sendMessage.setChatId(id);
-              sender.execute(sendMessage);
-          } catch (Exception e) {
-              log.error("Помилка відправлення користувача з id: %d".formatted(id));
-          }
-        });
-    }
-
-    private void sendBroadcast(SendMessage sendMessage, Set<Long> presentIds, String message) {
-        presentIds.forEach(id -> {
+    private void sendMulticast(SendMessage sendMessage, Set<Long> presentIds, Set<Long> values, String message) {
+        values.stream().filter(Objects::nonNull).filter(presentIds::contains).forEach(send -> {
+            long id = Long.parseLong(send.toString());
             try {
-            sendMessage.setChatId(id);
-            sendMessage.setText(message);
-            sender.execute(sendMessage);
+                sendMessage.setText(message);
+                sendMessage.setChatId(id);
+                sender.execute(sendMessage);
             } catch (Exception e) {
                 log.error("Помилка відправлення користувача з id: %d".formatted(id));
             }
         });
     }
 
-    private Set<Object> parseParams(String params) {
+    private void sendBroadcast(SendMessage sendMessage, Set<Long> presentIds, String message) {
+        presentIds.forEach(id -> {
+            try {
+                sendMessage.setChatId(id);
+                sendMessage.setText(message);
+                sender.execute(sendMessage);
+            } catch (Exception e) {
+                log.error("Помилка відправлення користувача з id: %d".formatted(id));
+            }
+        });
+    }
+
+    public Set<Long> parseParams(String params) {
         String[] splitted = params.split(" ");
         if (splitted[1].equalsIgnoreCase("-all")) {
-            return new HashSet<>() {{
-                add(splitted[1]);
-            }};
+            return UserDB.getAllUsers().keySet();
         }
-        Set<Object> userIds = new HashSet<>();
+        Set<Long> userIds = new HashSet<>();
         Arrays.stream(params.split(" ")).forEach(number -> {
             try {
                 userIds.add(Long.parseLong(number));
@@ -101,9 +93,11 @@ public class MessageSender {
     public AbilityBot getAbilityBot() {
         return abilityBot;
     }
+
     public SilentSender getSilentSender() {
         return sender;
     }
+
     public int getMessageId(Update update) {
         int messageId = 0;
         if (update.hasMessage()) {
@@ -119,33 +113,13 @@ public class MessageSender {
             currentUser.setLastSentMessage(getMessageId(update));
         }
     }
-    public void sendPhoto(Update update, User currentUser, String caption, ReplyKeyboard keyboard) throws IOException, TelegramApiException {
-        long subtract = (getMessageId(update) - currentUser.getLastSentMessage());
-        if (subtract > 0) {
-            overridePhoto(currentUser, caption, keyboard);
-        } else {
-            SendPhoto sendPhoto = new SendPhoto();
-            sendPhoto.setParseMode("html");
-            sendPhoto.setChatId(currentUser.getChatID());
-            sendPhoto.setCaption(caption);
-            if (keyboard != null) {
-                sendPhoto.setReplyMarkup(keyboard);
-            }
-            sendPhoto.setPhoto(new InputFile(new FileInputStream(Paths.get("funnyImages/image.jpg").toFile()), "meme"));
-            abilityBot.execute(sendPhoto);
-        }
-    }
 
-    private void overridePhoto(User currentUser, String caption, ReplyKeyboard keyboard) throws TelegramApiException {
-        EditMessageCaption editMessageCaption = new EditMessageCaption();
-        editMessageCaption.setCaption(caption);
-        editMessageCaption.setChatId(currentUser.getChatID());
-        editMessageCaption.setMessageId((int) currentUser.getLastSentMessage() + 1);
-        editMessageCaption.setParseMode("html");
-        if (keyboard != null) editMessageCaption.setReplyMarkup((InlineKeyboardMarkup) keyboard);
-        sender.execute(editMessageCaption);
+    public void sendGroupMedia(Message message, Set<Long> ids) {
+        List<InputMedia> inputMediaList = new ArrayList<>();
+        List<PhotoSize> photos = message.getPhoto();
+        System.out.println(photos);
+        SendMediaGroup sendMediaGroup = new SendMediaGroup();
     }
-
     public void sendMessage(User currentUser, String message, ReplyKeyboard keyboard, boolean overrideMessage) {
         if (overrideMessage) {
             overrideMessage(currentUser, message, keyboard);

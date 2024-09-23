@@ -13,7 +13,7 @@ import org.rozkladbot.entities.User;
 import org.rozkladbot.exceptions.InvalidDataException;
 import org.rozkladbot.factories.KeyBoardFactory;
 import org.rozkladbot.utils.ConsoleLineLogger;
-import org.rozkladbot.utils.MessageSender;
+import org.rozkladbot.utils.GroupMediaSender;
 import org.rozkladbot.utils.date.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.rozkladbot.constants.UserState.*;
@@ -32,10 +31,10 @@ import static org.rozkladbot.constants.UserState.*;
 @Component("ResponseHandler")
 public class ResponseHandler {
     private static final ConsoleLineLogger<ResponseHandler> log = new ConsoleLineLogger<>(ResponseHandler.class);
-    private MessageSender messageSender;
+    private GroupMediaSender messageSender;
 
     @Autowired
-    public ResponseHandler(MessageSender messageSender) {
+    public ResponseHandler(GroupMediaSender messageSender) {
         this.messageSender = messageSender;
     }
     public ResponseHandler() {
@@ -70,12 +69,9 @@ public class ResponseHandler {
 
     public void replyToButtons(Long chatId, Update update) {
         CompletableFuture.runAsync(() -> {
-            ReentrantLock lock = new ReentrantLock();
-            lock.lock();
             User currentUser = UserDB.getAllUsers().get(chatId);
-            String messageText;
-            lock.unlock();
             setUserName(update, currentUser);
+            String messageText = "";
             if (update.hasCallbackQuery()) {
                 if (currentUser.getUserName().isEmpty()) {
                     currentUser.setUserName(update.getCallbackQuery().getMessage().getChat().getUserName());
@@ -84,13 +80,19 @@ public class ResponseHandler {
                 currentUser.setLastSentMessage(update.getCallbackQuery().getMessage().getMessageId() - 1);
                 handleCallbackQuery(update, currentUser, chatId, callbackQueryText);
             } else if (update.hasMessage()) {
+                System.out.println(update.hasMessage());
+                Message message = update.getMessage();
                 if (currentUser.getUserName().isEmpty() && currentUser.getGroup() != null) {
-                    currentUser.setUserName(update.getMessage().getChat().getUserName());
+                    currentUser.setUserName(message.getChat().getUserName());
                 }
-                messageText = update.getMessage().getText();
-                currentUser.setLastSentMessage(update.getMessage().getMessageId());
+                if (message.hasText()) {
+                    messageText  = message.getText();
+                }
+                if (message.hasPhoto()) {
+                    messageText = message.getCaption() == null ? "" : message.getCaption();
+                }
+                currentUser.setLastSentMessage(message.getMessageId());
                 handleMessage(update, currentUser, chatId, messageText);
-                System.out.println(currentUser.getLastMessages());
             }
             try {
                 handleState(update, currentUser, chatId);
@@ -209,10 +211,6 @@ public class ResponseHandler {
             currentUser.setState(AWAITING_NEXT_DAY_SCHEDULE);
         } else if ("/custom".equalsIgnoreCase(messageText) || "/custom@rozkad_bot".equalsIgnoreCase(messageText)) {
             currentUser.setState(AWAITING_CUSTOM_SCHEDULE_INPUT);
-        } else if ("/forStart".equalsIgnoreCase(messageText)) {
-            currentUser.setState(AWAITING_FORWARD_MESSAGE);
-        } else if ("/forStop".equalsIgnoreCase(messageText)) {
-            currentUser.setState(IDLE);
         }
         handleAdminCommands(update, currentUser, chatId, messageText);
     }
@@ -253,6 +251,16 @@ public class ResponseHandler {
             } else if ("/forceFetch".equalsIgnoreCase(messageText)) {
                 AdminCommands.forceFetch();
                 currentUser.setState(IDLE);
+            } else if (messageText.toLowerCase().startsWith("/forstart")) {
+                messageSender.sendMessage(currentUser, "Готовий до відправки повідомлень", null, false);
+                messageSender.setIds(messageSender.parseParams(messageText));
+                currentUser.setState(AWAITING_FORWARD_MESSAGE);
+            } else if (messageText.toLowerCase().startsWith("/forstop")) {
+                messageSender.sendMessage(currentUser, "Починаю пересилання повідомлень", null, false);
+                messageSender.resendMediaGroup();
+                messageSender.clearIds();
+                currentUser.setState(IDLE);
+                messageSender.sendMessage(currentUser, "Закінчено пересилання повідомлень", null, false);
             }
         }
     }
@@ -272,6 +280,9 @@ public class ResponseHandler {
                     registerUser(update, currentUser, chatId);
             case STOP -> stopDialog(currentUser, chatId);
             case ADMIN_SEND_MESSAGE -> AdminCommands.sendMessage(update.getMessage().getText());
+            case AWAITING_FORWARD_MESSAGE -> {
+                messageSender.getMessageData(update, currentUser);
+            }
         }
     }
 
