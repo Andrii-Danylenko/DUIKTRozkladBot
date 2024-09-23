@@ -4,7 +4,6 @@ import org.rozkladbot.DBControllers.GroupDB;
 import org.rozkladbot.handlers.ResponseHandler;
 import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.utils.GroupMediaSender;
-import org.rozkladbot.utils.MessageSender;
 import org.rozkladbot.utils.date.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

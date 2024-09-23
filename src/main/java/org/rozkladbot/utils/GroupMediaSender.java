@@ -1,6 +1,5 @@
 package org.rozkladbot.utils;
 
-import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.constants.UserState;
 import org.rozkladbot.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
