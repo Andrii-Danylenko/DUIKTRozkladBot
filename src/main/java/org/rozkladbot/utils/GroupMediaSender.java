@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@Component("GroupMediaResender")
+@Component("GroupMediaSender")
 public class GroupMediaSender extends MessageSender {
     private static final Map<Long, List<Message>> groupMedia = new ConcurrentHashMap<>();
     private Set<Long> idsToSend = new HashSet<>();
@@ -46,7 +46,7 @@ public class GroupMediaSender extends MessageSender {
                 } else if (message.hasAnimation()) {
                     sendAnimation(message);
                 } else if (message.hasText()) {
-                    if (message.getText().toLowerCase().startsWith("/forstart")) return;
+                    if (message.getText().toLowerCase().startsWith("/echo")) return;
                     sendText(message);
                 } else if (message.hasAudio()) {
                     sendAudio(message);
@@ -67,7 +67,8 @@ public class GroupMediaSender extends MessageSender {
     private void sendAnimation(Message message) {
         SendAnimation sendAnimation = new SendAnimation();
         sendAnimation.setAnimation(new InputFile(message.getAnimation().getFileId()));
-        sendAnimation.setCaption(message.getCaption());
+        sendAnimation.setCaption(prepareStatement(message.getCaption()));
+        sendAnimation.setParseMode("MarkdownV2");
         for (long id : idsToSend) {
             try {
                 sendAnimation.setChatId(id);
@@ -79,9 +80,7 @@ public class GroupMediaSender extends MessageSender {
     }
 
     public synchronized void resendMediaGroup() {
-        System.out.println("----------------------");
         if (groupMedia.isEmpty()) {
-            System.out.println("=================");
             return;
         }
         SendMediaGroup mediaGroup = new SendMediaGroup();
@@ -92,10 +91,13 @@ public class GroupMediaSender extends MessageSender {
                 InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                 inputMediaPhoto.setMedia(message.getPhoto().get(0).getFileId());
                 inputMediaPhoto.setCaption(message.getCaption());
+                inputMediaPhoto.setCaption(prepareStatement(message.getCaption()));
+                inputMediaPhoto.setParseMode("MarkdownV2");
                 inputMediaList.add(inputMediaPhoto);
             } else if (message.hasVideo()) {
                 InputMediaVideo inputMediaVideo = new InputMediaVideo(message.getVideo().getFileId());
-                inputMediaVideo.setCaption(message.getCaption());
+                inputMediaVideo.setCaption(prepareStatement(message.getCaption()));
+                inputMediaVideo.setParseMode("MarkdownV2");
                 inputMediaList.add(inputMediaVideo);
             }
         }
@@ -113,7 +115,8 @@ public class GroupMediaSender extends MessageSender {
 
     public void sendPhoto(Message message) {
         SendPhoto photo = new SendPhoto();
-        photo.setCaption(message.getCaption());
+        photo.setCaption(prepareStatement(message.getCaption()));
+        photo.setParseMode("MarkdownV2");
         photo.setPhoto(new InputFile(
                 message.getPhoto().stream().max(Comparator.comparingInt(PhotoSize::getFileSize)
                 ).orElseThrow(RuntimeException::new).getFileId()));
@@ -129,8 +132,10 @@ public class GroupMediaSender extends MessageSender {
 
     public void sendVideo(Message message) {
         SendVideo video = new SendVideo();
-        video.setCaption(message.getCaption());
+        video.setCaption(prepareStatement(message.getCaption()));
+        System.out.println(video.getCaption());
         video.setVideo(new InputFile(message.getVideo().getFileId()));
+        video.setParseMode("MarkdownV2");
         for (long id : idsToSend) {
             try {
                 video.setChatId(id);
@@ -156,8 +161,9 @@ public class GroupMediaSender extends MessageSender {
     }
     public void sendAudio(Message message) {
         SendAudio sendAudio = new SendAudio();
-        sendAudio.setCaption(message.getCaption());
+        sendAudio.setCaption(prepareStatement(message.getCaption()));
         sendAudio.setAudio(new InputFile(message.getAudio().getFileId()));
+        sendAudio.setParseMode("MarkdownV2");
         for (long id : idsToSend) {
             try {
                 sendAudio.setChatId(id);
@@ -170,8 +176,9 @@ public class GroupMediaSender extends MessageSender {
 
     public void sendVoice(Message message) {
         SendVoice sendVoice = new SendVoice();
-        sendVoice.setCaption(message.getCaption());
+        sendVoice.setCaption(prepareStatement(message.getCaption()));;
         sendVoice.setVoice(new InputFile(message.getVoice().getFileId()));
+        sendVoice.setParseMode("MarkdownV2");
         for (long id : idsToSend) {
             try {
                 sendVoice.setChatId(id);
@@ -213,5 +220,10 @@ public class GroupMediaSender extends MessageSender {
     }
     public void clearIds() {
         idsToSend.clear();
+    }
+
+    private String prepareStatement(String text) {
+        System.out.println(text);
+        return text.replaceAll("([_*\\[\\]()~`>#+\\-=|{}.!])", "\\\\$1");
     }
 }

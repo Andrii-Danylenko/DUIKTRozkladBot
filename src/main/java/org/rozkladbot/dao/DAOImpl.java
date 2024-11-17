@@ -9,39 +9,25 @@ import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.date.DateUtils;
 import org.rozkladbot.utils.schedule.ScheduleParser;
 import org.rozkladbot.web.Requester;
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Repository;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
+@Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class DAOImpl implements DAO {
     private final ScheduleParser parser = new ScheduleParser();
     private static final String baseUrl = "https://skedy.api.yacode.dev/v1/student/schedule?";
-    private static volatile DAOImpl dao;
     private static final ConsoleLineLogger<DAOImpl> log = new ConsoleLineLogger<>(DAOImpl.class);
-
-    private DAOImpl() {
-
-    }
-
-    @Bean
-    public static DAOImpl getInstance() {
-        DAOImpl daoToReturn = dao;
-        if (daoToReturn != null) {
-            return daoToReturn;
-        }
-        synchronized (DAOImpl.class) {
-            if (dao == null) {
-                dao = new DAOImpl();
-            }
-            return dao;
-        }
-    }
 
     @Override
     public Table getWeeklyTable(User user) throws ExecutionException, InterruptedException {

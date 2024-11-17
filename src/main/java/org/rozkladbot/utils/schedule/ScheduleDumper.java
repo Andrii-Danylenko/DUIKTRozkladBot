@@ -34,6 +34,7 @@ public class ScheduleDumper {
         Set<String> alreadyDumpedGroups = new HashSet<>();
         log.info("Починаю локальне зберігання розкладів");
         UserDB.getAllUsers().values().forEach(x -> {
+            if (x.getGroup() == null) return;
             String groupNumber = x.getGroup().getGroupName();
             if (groupNumber == null || alreadyDumpedGroups.contains(groupNumber)) return;
             try {
@@ -58,7 +59,7 @@ public class ScheduleDumper {
 
     private void prepareForWriting(Path directoryPath, String fileName, HashMap<String, String> params, String dateFrom, String dateTo, boolean isForced) throws IOException {
         if (checkIfAlreadyWritten(directoryPath, fileName, isForced)) {
-            String response = "";
+            String response;
             params.put("dateFrom", dateFrom);
             params.put("dateTo", dateTo);
             response = Requester.makeRequest(DAOImpl.getBaseUrl(), params);

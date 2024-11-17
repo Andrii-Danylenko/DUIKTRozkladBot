@@ -5,13 +5,13 @@ import org.rozkladbot.DBControllers.UserDB;
 import org.rozkladbot.constants.EmojiList;
 import org.rozkladbot.constants.UserRole;
 import org.rozkladbot.constants.UserState;
-import org.rozkladbot.dao.DAOImpl;
 import org.rozkladbot.entities.DayOfWeek;
 import org.rozkladbot.entities.Group;
 import org.rozkladbot.entities.Table;
 import org.rozkladbot.entities.User;
 import org.rozkladbot.exceptions.InvalidDataException;
 import org.rozkladbot.factories.KeyBoardFactory;
+import org.rozkladbot.interfaces.DAO;
 import org.rozkladbot.utils.ConsoleLineLogger;
 import org.rozkladbot.utils.GroupMediaSender;
 import org.rozkladbot.utils.date.DateUtils;
@@ -32,14 +32,18 @@ import static org.rozkladbot.constants.UserState.*;
 public class ResponseHandler {
     private static final ConsoleLineLogger<ResponseHandler> log = new ConsoleLineLogger<>(ResponseHandler.class);
     private GroupMediaSender messageSender;
+    private DAO dao;
 
     @Autowired
-    public ResponseHandler(GroupMediaSender messageSender) {
+    public ResponseHandler(GroupMediaSender messageSender, DAO dao) {
         this.messageSender = messageSender;
+        this.dao = dao;
     }
+
     public ResponseHandler() {
 
     }
+
     public synchronized void replyToStart(Update update, long chatId) {
         try {
             String welcomeMessage = "";
@@ -63,6 +67,7 @@ public class ResponseHandler {
                     """.formatted(chatId, exception.getMessage()));
         }
     }
+
     public boolean userIsActive(long chatId) {
         return UserDB.getAllUsers().containsKey(chatId);
     }
@@ -80,13 +85,12 @@ public class ResponseHandler {
                 currentUser.setLastSentMessage(update.getCallbackQuery().getMessage().getMessageId() - 1);
                 handleCallbackQuery(update, currentUser, chatId, callbackQueryText);
             } else if (update.hasMessage()) {
-                System.out.println(update.hasMessage());
                 Message message = update.getMessage();
                 if (currentUser.getUserName().isEmpty() && currentUser.getGroup() != null) {
                     currentUser.setUserName(message.getChat().getUserName());
                 }
                 if (message.hasText()) {
-                    messageText  = message.getText();
+                    messageText = message.getText();
                 }
                 if (message.hasPhoto()) {
                     messageText = message.getCaption() == null ? "" : message.getCaption();
@@ -119,10 +123,10 @@ public class ResponseHandler {
 
     private void handleOtherCallbackQueries(User currentUser, String callbackQueryText) {
         if (currentUser.getGroup() != null &&
-                currentUser.getState() != AWAITING_INSTITUTE &&
-                currentUser.getState() != AWAITING_INPUT &&
-                currentUser.getState() != AWAITING_COURSE &&
-                currentUser.getState() != AWAITING_GROUP) {
+            currentUser.getState() != AWAITING_INSTITUTE &&
+            currentUser.getState() != AWAITING_INPUT &&
+            currentUser.getState() != AWAITING_COURSE &&
+            currentUser.getState() != AWAITING_GROUP) {
             if ("ЗГ".equalsIgnoreCase(callbackQueryText)) {
                 currentUser.setState(NULL_GROUP);
             } else if ("DAY".equalsIgnoreCase(callbackQueryText)) {
@@ -152,10 +156,10 @@ public class ResponseHandler {
                     currentUser.getLastMessages().addLast(callbackQueryText);
                 }
             } else if (currentUser.getGroup() == null &&
-                    currentUser.getState() != AWAITING_INSTITUTE &&
-                    currentUser.getState() != AWAITING_INPUT &&
-                    currentUser.getState() != AWAITING_COURSE &&
-                    currentUser.getState() != AWAITING_GROUP) {
+                       currentUser.getState() != AWAITING_INSTITUTE &&
+                       currentUser.getState() != AWAITING_INPUT &&
+                       currentUser.getState() != AWAITING_COURSE &&
+                       currentUser.getState() != AWAITING_GROUP) {
                 currentUser.setState(AWAITING_INPUT);
             } else if (currentUser.getState() == AWAITING_INSTITUTE) {
                 switch (callbackQueryText) {
@@ -232,8 +236,7 @@ public class ResponseHandler {
             } else if (messageText.toLowerCase().startsWith("/removeuser")) {
                 removeUser(currentUser, messageText);
                 currentUser.setState(IDLE);
-            }
-            else if (messageText.toLowerCase().startsWith("/synchronize ")) {
+            } else if (messageText.toLowerCase().startsWith("/synchronize ")) {
                 try {
                     AdminCommands.synchronize(messageText.split("\\s"));
                 } catch (IOException exception) {
@@ -251,16 +254,18 @@ public class ResponseHandler {
             } else if ("/forceFetch".equalsIgnoreCase(messageText)) {
                 AdminCommands.forceFetch();
                 currentUser.setState(IDLE);
-            } else if (messageText.toLowerCase().startsWith("/forstart")) {
+            } else if (messageText.toLowerCase().startsWith("/echo")) {
                 messageSender.sendMessage(currentUser, "Готовий до відправки повідомлень", null, false);
                 messageSender.setIds(messageSender.parseParams(messageText));
                 currentUser.setState(AWAITING_FORWARD_MESSAGE);
-            } else if (messageText.toLowerCase().startsWith("/forstop")) {
+            } else if (messageText.toLowerCase().startsWith("/echostop")) {
                 messageSender.sendMessage(currentUser, "Починаю пересилання повідомлень", null, false);
                 messageSender.resendMediaGroup();
                 messageSender.clearIds();
                 currentUser.setState(IDLE);
                 messageSender.sendMessage(currentUser, "Закінчено пересилання повідомлень", null, false);
+            } else if (messageText.toLowerCase().startsWith("/removeuser")) {
+                AdminCommands.deleteUserById(messageText);
             }
         }
     }
@@ -270,9 +275,9 @@ public class ResponseHandler {
         switch (currentUser.getState()) {
             case MAIN_MENU -> getMenu(currentUser, chatId, override);
             case AWAITING_THIS_WEEK_SCHEDULE,
-                    AWAITING_NEXT_DAY_SCHEDULE,
-                    AWAITING_THIS_DAY_SCHEDULE,
-                    AWAITING_NEXT_WEEK_SCHEDULE -> getSchedule(currentUser, chatId, override);
+                 AWAITING_NEXT_DAY_SCHEDULE,
+                 AWAITING_THIS_DAY_SCHEDULE,
+                 AWAITING_NEXT_WEEK_SCHEDULE -> getSchedule(currentUser, chatId, override);
             case AWAITING_CUSTOM_SCHEDULE_INPUT -> getCustomSchedulePrepare(currentUser, chatId, override);
             case AWAITING_CUSTOM_SCHEDULE -> splitAndSend(currentUser, chatId, update, override);
             case SETTINGS -> getSettings(currentUser, chatId, override);
@@ -312,7 +317,7 @@ public class ResponseHandler {
                         log.info("Спроба завантажити розклад за цей тиждень для користувача {%s}".formatted(chatId));
                         messageSender.sendMessage(currentUser, """
                                 %s Розклад на цей тиждень:
-
+                                
                                 %s
                                 """.formatted(EmojiList.NERD_FACE, UserCommands.getThisWeekSchedule(currentUser)), KeyBoardFactory.getBackButton(), true);
                         log.success("Успішно закінчена спроба завантажити розклад на цей тиждень для користувача {%s}".formatted(chatId));
@@ -321,7 +326,7 @@ public class ResponseHandler {
                         log.info("Спроба завантажити розклад на наступний тиждень для користувача {%s}".formatted(chatId));
                         messageSender.sendMessage(currentUser, """
                                 %s Розклад на наступний тиждень:
-
+                                
                                 %s
                                 """.formatted(EmojiList.NERD_FACE, UserCommands.getNextWeekSchedule(currentUser)), KeyBoardFactory.getBackButton(), true);
                         log.success("Успішно закінчена спроба завантажити розклад на наступний тиждень для користувача {%s}".formatted(chatId));
@@ -330,7 +335,7 @@ public class ResponseHandler {
                         log.success("Успішно закінчена спроба завантажити розклад на сьогодні для користувача {%s}".formatted(chatId));
                         messageSender.sendMessage(currentUser, """
                                 %s Розклад на сьогодні:
-
+                                
                                 %s
                                 """.formatted(EmojiList.NERD_FACE, UserCommands.getThisDaySchedule(currentUser)), KeyBoardFactory.getBackButton(), true);
                         log.success("Успішно закінчена спроба завантажити розклад на сьогодні для користувача {%s}".formatted(chatId));
@@ -339,7 +344,7 @@ public class ResponseHandler {
                         log.success("Успішно закінчена спроба завантажити розклад на завтра для користувача {%s}".formatted(chatId));
                         messageSender.sendMessage(currentUser, """
                                 %s Розклад на завтра:
-
+                                
                                 %s
                                 """.formatted(EmojiList.NERD_FACE, UserCommands.getTomorrowSchedule(currentUser)), KeyBoardFactory.getBackButton(), true);
                         log.success("Успішно закінчена спроба завантажити розклад на завтра для користувача {%s}".formatted(chatId));
@@ -347,7 +352,7 @@ public class ResponseHandler {
                 }
             } catch (Exception exception) {
                 log.error(("Помилка під час спроби завантажити розклад на завтра для користувача {%s}." +
-                        "Підстава: %s").formatted(chatId, exception.getCause()));
+                           "Підстава: %s").formatted(chatId, exception.getCause()));
                 messageSender.sendMessage(currentUser, """
                         Виникла помилка під час отримання розкладу.
                         Спробуйте пізніше. 🥺
@@ -381,14 +386,15 @@ public class ResponseHandler {
                     Розпочато спробу розпарсити ввід користувача з id {%d}.
                     Повідомлення для парсингу: {%s}""".formatted(chatId, update.getMessage().getText()));
             String[] data = update.getMessage().getText().split("\\sз\\s|\\sпо\\s");
-            if (data.length != 3) throw new InvalidDataException("Довжина масива менша за 3(%d)".formatted(data.length));
+            if (data.length != 3)
+                throw new InvalidDataException("Довжина масива менша за 3(%d)".formatted(data.length));
             log.success("""
                     Успішно завершено спробу розпарсити ввід користувача з id {%d}
                     """.formatted(chatId));
             log.info("""
                     Розпочато спробу отримати розклад для користувача з id {%d}.
                     Дата для отримання: з {%s} по {%s}""".formatted(chatId, data[1], data[2]));
-            Table response = DAOImpl.getInstance()
+            Table response = dao
                     .getCustomTable(currentUser, data[0], data[1],
                             DateUtils.toString(DateUtils.parseDate(data[2]).plusDays(1)));
             log.success("""
@@ -471,10 +477,10 @@ public class ResponseHandler {
         } else {
             String stringBuffer = (currentUser.getGroup() == null ? "Схоже, що ви не зареєстровані.\n" :
                     "Для того, щоб змінити дані,\n") +
-                    """
-                            Виберіть інститут.
-                            Інститути, які наразі підтримуються:
-                            """;
+                                  """
+                                          Виберіть інститут.
+                                          Інститути, які наразі підтримуються:
+                                          """;
             messageSender.sendMessage(currentUser, stringBuffer, KeyBoardFactory.getInstitutesKeyboardInline(), true);
             currentUser.setState(AWAITING_INSTITUTE);
         }
@@ -510,8 +516,7 @@ public class ResponseHandler {
                     currentUser.setUserName("@" + message.getChat().getUserName());
                 }
             }
-        }
-        else if (currentUser.getUserName().isEmpty()) {
+        } else if (currentUser.getUserName().isEmpty()) {
             Message message = update.getMessage();
             if (message.getChat().isGroupChat() || message.getChat().isSuperGroupChat()) {
                 currentUser.setUserName(message.getChat().getTitle());
@@ -528,7 +533,7 @@ public class ResponseHandler {
             UserDB.removeUserById(userId);
             String success = "Успішно видалив користувача з id %d".formatted(userId);
             log.success(success);
-            messageSender.sendMessage(currentUser,  success, null, false);
+            messageSender.sendMessage(currentUser, success, null, false);
         } catch (Exception exception) {
             log.error("Не вдалося видалити користувача. Привід: %s".formatted(exception.getCause().getMessage()));
         }

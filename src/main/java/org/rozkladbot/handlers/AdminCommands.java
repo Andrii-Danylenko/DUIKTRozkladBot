@@ -34,8 +34,8 @@ public class AdminCommands {
                            /terminateSession - закриває сесію бота, попередньо оновлюючи всі офлайн-дані
                            /forceFetch - примусово оновити дані груп
                            /sendMessage [user_id(s) або -all]- відправити повідомлення вибраним користувачам
-                           /forstart - почати пересилання повідомлень
-                           /forstop - закінчити пересилання повідомлень
+                           /echo [user_ids або -all] - почати пересилання повідомлень
+                           /echoStop [user_ids або -all] - закінчити пересилання повідомлень (Також пересилає групу повідомлень)
                            """;
     }
     public static void viewUsers(SilentSender sender, long chatId) {
@@ -123,9 +123,10 @@ public class AdminCommands {
             System.exit(0);
         }
     }
-    private static void deleteUserById(long userId) {
+    public static void deleteUserById(String message) {
         log.info("Спроба видалили користувача...");
-        UserDB.removeUserById(userId);
-        log.success("Спроба видалили користувача виконана успішно!");
+        long id = Long.parseLong(message.split("\\s")[1]);
+        UserDB.removeUserById(id);
+        log.success("Спроба видалили користувача з ID %d виконана успішно!".formatted(id));
     }
 }
