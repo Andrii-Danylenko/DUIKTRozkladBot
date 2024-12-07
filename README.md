@@ -29,5 +29,5 @@
 ![Week Schedule](https://github.com/user-attachments/assets/d850ef91-bf1a-4c90-b77c-33b4847c5f41)  
 
 ---
-![logo](https://github.com/user-attachments/assets/3bf34f89-c9c3-4fe9-9341-ee62c3da12d3=250x250)
+![logo](https://github.com/user-attachments/assets/3bf34f89-c9c3-4fe9-9341-ee62c3da12d3 =250x250)
 
