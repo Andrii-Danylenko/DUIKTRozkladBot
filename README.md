@@ -1,10 +1,10 @@
 # 📅 SUICT Schedule Bot  
 
-**Streamlining the process of retrieving schedules for SUICT students.**  
+**Streamlining the process of retrieving schedules for over than 200 SUICT students.**  
 
 ---
 
-## 🚀 Key Features  
+## 🔑 Key Features  
 1. **User-friendly interface**: Simple and intuitive navigation.  
 2. **User registration**: Save and manage user data seamlessly.  
 3. **Offline mode**: Access schedules even without an internet connection.  
@@ -29,5 +29,5 @@
 ![Week Schedule](https://github.com/user-attachments/assets/d850ef91-bf1a-4c90-b77c-33b4847c5f41)  
 
 ---
-![logo](https://github.com/user-attachments/assets/3bf34f89-c9c3-4fe9-9341-ee62c3da12d3)
+![logo](https://github.com/user-attachments/assets/3bf34f89-c9c3-4fe9-9341-ee62c3da12d3=250x250)
 
